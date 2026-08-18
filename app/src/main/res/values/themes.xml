@@ -1,8 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Usa un tema NoActionBar -->
     <style name="Base.Theme.Train2gether" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <!-- Rende il colore della barra superiore scuro/nero come lo sfondo -->
+        <item name="android:statusBarColor">#121212</item>
+
+        <!-- Mantiene le icone di stato (ora, batteria, wifi) chiare/bianche -->
+        <item name="android:windowLightStatusBar">false</item>
+
     </style>
 
     <style name="Theme.Train2gether" parent="Base.Theme.Train2gether" />

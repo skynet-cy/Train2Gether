@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/containerSerie"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -45,11 +46,18 @@
         android:textColor="@android:color/white"
         android:textColorHint="#777777" />
 
-    <CheckBox
+    <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/chkCompleto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:buttonTint="#3D5AFE" />
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:padding="0dp"
+        app:buttonTint="#3D5AFE"
+        app:checkedIconTint="@android:color/white"
+        app:useMaterialThemeColors="false" />
 
     <ImageButton
         android:id="@+id/btnEliminaSerie"
@@ -57,7 +65,6 @@
         android:layout_height="32dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
-        app:tint="#888888"
-        xmlns:app="http://schemas.android.com/apk/res-auto" />
+        app:tint="#888888" />
 
 </LinearLayout>

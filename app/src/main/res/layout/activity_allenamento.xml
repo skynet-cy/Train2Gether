@@ -2,55 +2,79 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mainAllenamento"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#121212"
     android:padding="16dp">
 
-    <!-- TIMER RECUPERO -->
+    <!-- TITOLO SCHEDA -->
+    <TextView
+        android:id="@+id/txtNomeSchedaTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Nome Scheda"
+        android:textColor="@android:color/white"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- TEXTVIEW PER IL TIMER DI RECUPERO (Visibile solo quando attivo) -->
     <TextView
         android:id="@+id/txtTimer"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="⏱️ Recupero: 60s (Tocca per cambiare)"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:background="#2C2C2C"
+        android:gravity="center"
         android:padding="8dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:textColor="#FFCA28"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/txtNomeSchedaTitle" />
 
-    <!-- RECYCLERVIEW DEGLI ESERCIZI -->
+    <!-- RECYCLERVIEW PER LA LISTA DEGLI ESERCIZI -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewEsercizi"
+        android:id="@+id/recyclerEsercizi"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintTop_toBottomOf="@id/txtTimer"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toTopOf="@id/btnAggiungiEsercizio"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/txtTimer" />
 
     <!-- BOTTONE AGGIUNGI ESERCIZIO -->
     <Button
         android:id="@+id/btnAggiungiEsercizio"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="+ Aggiungi Esercizio"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@id/btnSalvaAllenamento"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:backgroundTint="#2C2C2C"
+        android:text="+ Aggiungi Esercizio"
+        android:textAllCaps="false"
+        android:textColor="#3D5AFE"
+        app:layout_constraintBottom_toTopOf="@id/btnSalvaOppureTermina"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- BOTTONE SALVA ALLENAMENTO -->
+    <!-- BOTTONE SALVA MODIFICHE / TERMINA ALLENAMENTO -->
     <Button
-        android:id="@+id/btnSalvaAllenamento"
+        android:id="@+id/btnSalvaOppureTermina"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="💾 Salva Allenamento"
+        android:backgroundTint="#3D5AFE"
+        android:text="Termina Allenamento"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
