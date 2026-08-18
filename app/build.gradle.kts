@@ -5,7 +5,6 @@ plugins {
 android {
     namespace = "com.example.train2gether"
 
-    // 👈 CAMBIATO QUI: Usiamo direttamente il livello 37!
     compileSdk = 37
 
     defaultConfig {
