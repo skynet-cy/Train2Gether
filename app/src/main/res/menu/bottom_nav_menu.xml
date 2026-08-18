@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:id="@+id/nav_allenamento"
-        android:icon="@android:drawable/ic_menu_agenda"
-        android:title="Allenamento" />
-
+    <!-- 1. HOME / STORICO A SINISTRA -->
     <item
         android:id="@+id/nav_home"
         android:icon="@android:drawable/ic_menu_myplaces"
         android:title="Home / Storico" />
+
+    <!-- 2. ALLENAMENTO A DESTRA -->
+    <item
+        android:id="@+id/nav_allenamento"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Allenamento" />
 
 </menu>
