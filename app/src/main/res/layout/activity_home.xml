@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mainHome"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- TITOLO SCHERMATA STORICO -->
+    <TextView
+        android:id="@+id/txtTitoloHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="24dp"
+        android:text="Storico Allenamenti"
+        android:textColor="@android:color/white"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- CONTENUTO STORICO (Per ora un testo di esempio, poi metteremo la lista) -->
+    <TextView
+        android:id="@+id/txtPlaceholderStorico"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Qui vedrai gli allenamenti completati 🏋️‍♂️"
+        android:textColor="#888888"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationHome"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtTitoloHome" />
+
+    <!-- BARRA DI NAVIGAZIONE IN BASSO -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationHome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#121212"
+        app:menu="@menu/bottom_nav_menu"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -43,6 +44,24 @@ class MainActivity : AppCompatActivity() {
 
         val btnNuovaScheda: Button = findViewById(R.id.btnNuovaScheda)
         recyclerSchede = findViewById(R.id.recyclerViewMainSchede)
+
+        val bottomNav: BottomNavigationView = findViewById(R.id.bottomNavigation)
+        bottomNav.selectedItemId = R.id.nav_allenamento // Seleziona la scheda attiva
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_allenamento -> true
+                R.id.nav_home -> {
+                    // Apre la schermata Home / Storico
+                    val intent = Intent(this, HomeActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0, 0) // Transizione fluida senza scatti
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
 
         // Configurazione della RecyclerView
         recyclerSchede.layoutManager = LinearLayoutManager(this)
