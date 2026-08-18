@@ -8,5 +8,6 @@ data class SerieEsercizio(
 
 data class EsercizioConSerie(
     var nomeEsercizio: String,
+    var tempoRecuperoSecondi: Long = 60,
     val listaSerie: MutableList<SerieEsercizio> = mutableListOf()
 )

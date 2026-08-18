@@ -71,11 +71,14 @@ class AllenamentoActivity : AppCompatActivity() {
 
         // 3. Inizializzazione della RecyclerView con i 3 parametri richiesti
         recyclerView.layoutManager = LinearLayoutManager(this)
+        // In AllenamentoActivity.kt dentro onCreate():
+
         adapter = EsercizioAdapter(
             listaEsercizi = listaEserciziMutable,
             isModifica = isModifica,
-            onSerieSpuntata = {
-                avviaTimerRecupero(tempoRecuperoSecondi * 1000)
+            onSerieSpuntata = { tempoSecondi ->
+                // Avvia il timer usando i secondi dell'esercizio spuntato
+                avviaTimerRecupero(tempoSecondi * 1000)
             }
         )
         recyclerView.adapter = adapter

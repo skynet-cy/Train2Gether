@@ -1,54 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="#1E1E1E"
-    android:padding="12dp"
-    android:layout_marginBottom="16dp">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="8dp"
+    app:cardBackgroundColor="#1E1E1E"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
 
-    <!-- INTESTAZIONE ESERCIZIO (NOME + TASTO ELIMINA) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingBottom="8dp">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/txtNomeEsercizio"
-            android:layout_width="0dp"
+        <!-- INTESTAZIONE ESERCIZIO -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/txtNomeEsercizio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="Nome Esercizio"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- ⏱️ TIMER DEDICATO ALL'ESERCIZIO -->
+            <TextView
+                android:id="@+id/txtTimerEsercizio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/btnEliminaEsercizio"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:background="#2C2C2C"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="⏱️ 60s"
+                android:textColor="#FFCA28"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnEliminaEsercizio"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="#FF5252" />
+
+        </RelativeLayout>
+
+        <!-- LISTA DELLE SERIE -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerSerie"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Panca Piana"
-            android:textColor="#3D5AFE"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="12dp" />
 
-        <ImageButton
-            android:id="@+id/btnEliminaEsercizio"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_delete"
-            android:contentDescription="Elimina esercizio" />
+        <!-- BOTTONE AGGIUNGI SET -->
+        <Button
+            android:id="@+id/btnAggiungiSerieEsercizio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#2C2C2C"
+            android:text="+ Aggiungi Set"
+            android:textAllCaps="false"
+            android:textColor="#3D5AFE" />
+
     </LinearLayout>
 
-    <!-- LISTA DELLE SERIE DI QUESTO ESERCIZIO -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerSerie"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <!-- BOTTONE PER AGGIUNGERE SERIE A QUESTO SPECIFICO ESERCIZIO -->
-    <Button
-        android:id="@+id/btnAggiungiSerieEsercizio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="+ Aggiungi Set"
-        android:textSize="12sp"
-        android:layout_gravity="end"
-        android:layout_marginTop="8dp" />
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

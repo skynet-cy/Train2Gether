@@ -33,11 +33,21 @@ class AllenamentoFragment : Fragment() {
         adapter = SchedaAdapter(
             listaSchede = listaSchedeMutable,
             onAvviaClick = { scheda ->
-                val intent = Intent(requireContext(), AllenamentoActivity::class.java)
-                intent.putExtra("SCHEDA_ID", scheda.id)
-                intent.putExtra("IS_MODIFICA", false)
-                startActivity(intent)
-            },
+                if (scheda.listaEsercizi.isEmpty()) {
+                    // 🚫 Se non ci sono esercizi, blocchiamo l'avvio
+                    Toast.makeText(
+                        requireContext(),
+                        "Impossibile avviare: aggiungi almeno un esercizio alla scheda!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    // 🟢 Se ci sono esercizi, avviamo l'allenamento
+                    val intent = Intent(requireContext(), AllenamentoActivity::class.java)
+                    intent.putExtra("SCHEDA_ID", scheda.id)
+                    intent.putExtra("IS_MODIFICA", false)
+                    startActivity(intent)
+                }
+            }, // 👈 Aggiunta virgola mancante qui
             onModificaClick = { scheda ->
                 val intent = Intent(requireContext(), AllenamentoActivity::class.java)
                 intent.putExtra("SCHEDA_ID", scheda.id)
@@ -86,12 +96,7 @@ class AllenamentoFragment : Fragment() {
                     val nuovaScheda = SchedaAllenamento(
                         id = System.currentTimeMillis().toString(),
                         nomeScheda = nomeScheda,
-                        listaEsercizi = listOf(
-                            EsercizioConSerie(
-                                nomeEsercizio = "Panca Piana",
-                                listaSerie = mutableListOf(SerieEsercizio(1, 20.0, 10))
-                            )
-                        )
+                        listaEsercizi = emptyList() // 👈 Rimossa la virgola superflua
                     )
 
                     GestoreSchede.salvaScheda(requireContext(), nuovaScheda)
