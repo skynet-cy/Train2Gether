@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/txtNumeroSerie"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="1"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/editKgSerie"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:hint="0 kg"
+        android:inputType="numberDecimal"
+        android:textColor="@android:color/white"
+        android:textColorHint="#888888"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/editRipetizioni"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:hint="0 reps"
+        android:inputType="number"
+        android:textColor="@android:color/white"
+        android:textColorHint="#888888"
+        android:textSize="16sp" />
+
+    <CheckBox
+        android:id="@+id/chkCompleto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <!-- TASTO CANCELLA SERIE -->
+    <ImageButton
+        android:id="@+id/btnEliminaSerie"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="Elimina serie" />
+
+</LinearLayout>

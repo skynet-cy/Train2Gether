@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="8dp"
+    app:cardBackgroundColor="#1E1E1E"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- INTESTAZIONE: NOME SCHEDA + NUMERO ESERCIZI -->
+        <TextView
+            android:id="@+id/txtNomeScheda"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chest &amp; Biceps"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtInfoEsercizi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="4 Esercizi"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp" />
+
+        <!-- BOTTONI DI AZIONE (AVVIA E MODIFICA) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <!-- BOTTONE AVVIA ALLENAMENTO -->
+            <Button
+                android:id="@+id/btnAvviaAllenamento"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#3D5AFE"
+                android:text="▶️ Avvia"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white" />
+
+            <!-- BOTTONE MODIFICA SCHEDA -->
+            <Button
+                android:id="@+id/btnModificaScheda"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="#333333"
+                android:text="✏️ Modifica"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,16 @@
+# File di configurazione locale
+/local.properties
+
+# Cartelle di build e file temporanei
+/build
+.gradle/
+.DS_Store
+/captures
+.externalNativeBuild
+.cxx/
+
+# Tutta la cartella .idea (impostazioni dinamiche di Android Studio / IDE)
+/.idea/
+
+# File di modulo Android Studio
+*.iml

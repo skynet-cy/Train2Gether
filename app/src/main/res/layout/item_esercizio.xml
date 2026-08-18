@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1E1E1E"
+    android:padding="12dp"
+    android:layout_marginBottom="16dp">
+
+    <!-- INTESTAZIONE ESERCIZIO (NOME + TASTO ELIMINA) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/txtNomeEsercizio"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Panca Piana"
+            android:textColor="#3D5AFE"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnEliminaEsercizio"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="Elimina esercizio" />
+    </LinearLayout>
+
+    <!-- LISTA DELLE SERIE DI QUESTO ESERCIZIO -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerSerie"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- BOTTONE PER AGGIUNGERE SERIE A QUESTO SPECIFICO ESERCIZIO -->
+    <Button
+        android:id="@+id/btnAggiungiSerieEsercizio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+ Aggiungi Set"
+        android:textSize="12sp"
+        android:layout_gravity="end"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>
