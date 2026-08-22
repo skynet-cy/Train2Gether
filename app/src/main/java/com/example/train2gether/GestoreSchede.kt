@@ -16,7 +16,6 @@ data class SchedaAllenamento(
 
 object GestoreSchede {
 
-    // Carica tutte le schede dal Database Room in modo asincrono
     suspend fun caricaTutteLeSchede(context: Context): List<SchedaAllenamento> = withContext(Dispatchers.IO) {
         val db = AppDatabase.getDatabase(context)
         val schedaDao = db.schedaDao()
@@ -27,7 +26,6 @@ object GestoreSchede {
         for (riepilogo in riepiloghi) {
             val schedaCompleta = schedaDao.getSchedaCompleta(riepilogo.id)
             if (schedaCompleta != null) {
-                // 🟢 CORRETTO: adesso usa eserciziOrdinati() come definito nelle tue classi
                 val eserciziConvertiti = schedaCompleta.eserciziOrdinati().map { esCompleto ->
                     EsercizioConSerie(
                         nomeEsercizio = esCompleto.esercizio.nome,
@@ -54,7 +52,6 @@ object GestoreSchede {
         return@withContext listaSchede
     }
 
-    // Salva o aggiorna una scheda nel Database Room sfruttando i metodi transazionali del DAO
     suspend fun salvaScheda(context: Context, scheda: SchedaAllenamento) = withContext(Dispatchers.IO) {
         val db = AppDatabase.getDatabase(context)
         val schedaDao = db.schedaDao()
@@ -99,7 +96,6 @@ object GestoreSchede {
         }
     }
 
-    // Elimina una scheda dal Database Room
     suspend fun eliminaScheda(context: Context, schedaId: String) = withContext(Dispatchers.IO) {
         val schedaDao = AppDatabase.getDatabase(context).schedaDao()
         val idNumerico = schedaId.toIntOrNull()

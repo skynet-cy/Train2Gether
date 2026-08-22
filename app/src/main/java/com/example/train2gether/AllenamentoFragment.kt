@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
@@ -56,48 +55,22 @@ class AllenamentoFragment : Fragment() {
                 startActivity(intent)
             },
             onEliminaClick = { scheda ->
-                // 🟢 ELIMINAZIONE ASINCRONA DAL DATABASE
-                viewLifecycleOwner.lifecycleScope.launch {
-                    GestoreSchede.eliminaScheda(requireContext(), scheda.id)
-                    caricaSchedeSalvate()
-                    Toast.makeText(requireContext(), "Scheda eliminata", Toast.LENGTH_SHORT).show()
-                }
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Elimina Scheda")
+                    .setMessage("Sei sicuro di voler eliminare definitivamente la scheda \"${scheda.nomeScheda}\"?")
+                    .setPositiveButton("Elimina") { _, _ ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            GestoreSchede.eliminaScheda(requireContext(), scheda.id)
+                            caricaSchedeSalvate()
+                            Toast.makeText(requireContext(), "Scheda eliminata", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .setNegativeButton("Annulla", null)
+                    .show()
             }
         )
 
         recyclerSchede.adapter = adapter
-
-        val touchHelperCallback = object : ItemTouchHelper.SimpleCallback(
-            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
-        ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
-                val posizioneIniziale = viewHolder.adapterPosition
-                val posizioneFinale = target.adapterPosition
-                adapter.spostaElemento(posizioneIniziale, posizioneFinale)
-                return true
-            }
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
-
-            override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-                super.onSelectedChanged(viewHolder, actionState)
-                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
-                    viewHolder?.itemView?.alpha = 0.6f
-                }
-            }
-
-            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-                super.clearView(recyclerView, viewHolder)
-                viewHolder.itemView.alpha = 1.0f
-            }
-        }
-
-        val itemTouchHelper = ItemTouchHelper(touchHelperCallback)
-        itemTouchHelper.attachToRecyclerView(recyclerSchede)
 
         btnNuovaScheda.setOnClickListener {
             mostraPopupNuovaScheda()
@@ -112,7 +85,6 @@ class AllenamentoFragment : Fragment() {
     }
 
     private fun caricaSchedeSalvate() {
-        // 🟢 CARICAMENTO ASINCRONO DAL DATABASE
         viewLifecycleOwner.lifecycleScope.launch {
             val schedeCaricate = GestoreSchede.caricaTutteLeSchede(requireContext())
             listaSchedeMutable.clear()
@@ -133,15 +105,14 @@ class AllenamentoFragment : Fragment() {
                 val nomeScheda = inputNomeScheda.text.toString().trim()
 
                 if (nomeScheda.isNotEmpty()) {
-                    val nuovaScheda = SchedaAllenamento(
+                    val nuevaScheda = SchedaAllenamento(
                         id = System.currentTimeMillis().toString(),
                         nomeScheda = nomeScheda,
                         listaEsercizi = emptyList()
                     )
 
-                    // 🟢 SALVATAGGIO ASINCRONO DELLA NUOVA SCHEDA NEL DATABASE
                     viewLifecycleOwner.lifecycleScope.launch {
-                        GestoreSchede.salvaScheda(requireContext(), nuovaScheda)
+                        GestoreSchede.salvaScheda(requireContext(), nuevaScheda)
                         caricaSchedeSalvate()
                     }
                 } else {

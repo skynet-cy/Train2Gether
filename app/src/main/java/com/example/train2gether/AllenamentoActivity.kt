@@ -61,7 +61,6 @@ class AllenamentoActivity : AppCompatActivity() {
         schedaId = intent.getStringExtra("SCHEDA_ID")
         isModifica = intent.getBooleanExtra("IS_MODIFICA", false)
 
-        // 🟢 CARICAMENTO ASINCRONO DAL DATABASE ROOM
         if (schedaId != null) {
             lifecycleScope.launch {
                 val tutteLeSchede = GestoreSchede.caricaTutteLeSchede(this@AllenamentoActivity)
@@ -137,7 +136,6 @@ class AllenamentoActivity : AppCompatActivity() {
                 .setTitle("Modifiche non salvate")
                 .setMessage("Hai modificato i dati dell'allenamento. Vuoi salvarli prima di uscire?")
                 .setPositiveButton("Salva") { _, _ ->
-                    // 🟢 SALVATAGGIO ASINCRONO PRIMA DI USCIRE
                     val idScheda = schedaId ?: System.currentTimeMillis().toString()
                     val nomeScheda = txtNomeSchedaTitle.text.toString()
                     val schedaDaSalvare = SchedaAllenamento(
@@ -160,7 +158,6 @@ class AllenamentoActivity : AppCompatActivity() {
                 .setNeutralButton("Annulla", null)
                 .show()
         } else {
-            // Se non ci sono modifiche ma si preme Termina Allenamento, salviamo comunque lo stato attuale o usciamo
             val idScheda = schedaId ?: System.currentTimeMillis().toString()
             val nomeScheda = txtNomeSchedaTitle.text.toString()
             val schedaDaSalvare = SchedaAllenamento(

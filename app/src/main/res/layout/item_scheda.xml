@@ -15,7 +15,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- INTESTAZIONE: TITOLI A SINISTRA E MENU A DESTRA -->
+        <!-- INTESTAZIONE: TITOLI A SINISTRA E CESTINO A DESTRA -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -24,7 +24,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_toStartOf="@id/btnOpzioniScheda"
+                android:layout_toStartOf="@id/btnEliminaScheda"
                 android:layout_centerVertical="true">
 
                 <TextView
@@ -46,16 +46,16 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- ICONA 3 PUNTINI -->
+            <!-- 🗑️ ICONA CESTINO PER L'ELIMINAZIONE DIRETTA -->
             <ImageButton
-                android:id="@+id/btnOpzioniScheda"
+                android:id="@+id/btnEliminaScheda"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_more"
-                app:tint="@android:color/white" />
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="#FF5252" />
         </RelativeLayout>
 
         <!-- BOTTONI DI AZIONE (AVVIA E MODIFICA) -->

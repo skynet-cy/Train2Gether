@@ -69,7 +69,7 @@ class SerieAdapter(
 
         holder.chkCompleto.setOnClickListener {
             if (holder.chkCompleto.isChecked) {
-                holder.containerRow.setBackgroundColor(Color.parseColor("#1B5E20")) // Verde scuro per tema dark
+                holder.containerRow.setBackgroundColor(Color.parseColor("#1B5E20"))
                 onSerieSpuntata()
             } else {
                 holder.containerRow.setBackgroundColor(Color.TRANSPARENT)

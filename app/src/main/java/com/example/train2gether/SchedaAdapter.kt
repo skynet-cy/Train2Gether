@@ -5,11 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
-import android.widget.PopupMenu
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
-import java.util.Collections
 
 class SchedaAdapter(
     private val listaSchede: MutableList<SchedaAllenamento>,
@@ -23,7 +20,7 @@ class SchedaAdapter(
         val txtInfo: TextView = view.findViewById(R.id.txtInfoEsercizi)
         val btnAvvia: Button = view.findViewById(R.id.btnAvviaAllenamento)
         val btnModifica: Button = view.findViewById(R.id.btnModificaScheda)
-        val btnOpzioni: ImageButton = view.findViewById(R.id.btnOpzioniScheda)
+        val btnEliminaScheda: ImageButton = view.findViewById(R.id.btnEliminaScheda)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SchedaViewHolder {
@@ -42,32 +39,9 @@ class SchedaAdapter(
         holder.btnAvvia.setOnClickListener { onAvviaClick(scheda) }
         holder.btnModifica.setOnClickListener { onModificaClick(scheda) }
 
-        // Gestione del menu a tre puntini
-        holder.btnOpzioni.setOnClickListener { view ->
-            val popup = PopupMenu(view.context, view)
-            popup.menu.add("Elimina")
-            popup.setOnMenuItemClickListener { item ->
-                if (item.title == "Elimina") {
-                    AlertDialog.Builder(view.context)
-                        .setTitle("Elimina Scheda")
-                        .setMessage("Vuoi davvero eliminare la scheda \"${scheda.nomeScheda}\"?")
-                        .setPositiveButton("Elimina") { _, _ ->
-                            onEliminaClick(scheda)
-                        }
-                        .setNegativeButton("Annulla", null)
-                        .show()
-                    true
-                } else {
-                    false
-                }
-            }
-            popup.show()
+        holder.btnEliminaScheda.setOnClickListener {
+            onEliminaClick(scheda)
         }
-    }
-
-    fun spostaElemento(posizioneIniziale: Int, posizioneFinale: Int) {
-        Collections.swap(listaSchede, posizioneIniziale, posizioneFinale)
-        notifyItemMoved(posizioneIniziale, posizioneFinale)
     }
 
     override fun getItemCount(): Int = listaSchede.size
