@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class SerieAdapter(
     private val listaSerie: MutableList<SerieEsercizio>,
-    private val isModifica: Boolean, // 👈 Riceve la modalità
+    private val isModifica: Boolean,
     private val onSerieSpuntata: () -> Unit,
     private val onEliminaSerie: (Int) -> Unit
 ) : RecyclerView.Adapter<SerieAdapter.SerieViewHolder>() {
@@ -42,7 +42,6 @@ class SerieAdapter(
         holder.editKg.setText(if (data.kg > 0) data.kg.toString() else "")
         holder.editReps.setText(if (data.reps > 0) data.reps.toString() else "")
 
-        // 🚫 SE SIAMO IN MODALITÀ MODIFICA, NASCONDIAMO LA CHECKBOX
         if (isModifica) {
             holder.chkCompleto.visibility = View.GONE
         } else {

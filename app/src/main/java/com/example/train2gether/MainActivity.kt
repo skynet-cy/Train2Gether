@@ -27,11 +27,9 @@ class MainActivity : AppCompatActivity() {
         viewPager = findViewById(R.id.viewPager)
         bottomNav = findViewById(R.id.bottomNavigation)
 
-        // Imposta l'adapter per scorrere tra le schermate
         val adapter = ViewPagerAdapter(this)
         viewPager.adapter = adapter
 
-        // 1. Quando clicchi sui tasti in basso -> cambia pagina nel ViewPager
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
@@ -46,7 +44,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 2. Quando fai lo SLIDE con il dito -> aggiorna il tasto selezionato in basso
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)

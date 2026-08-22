@@ -15,24 +15,48 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- INTESTAZIONE: NOME SCHEDA + NUMERO ESERCIZI -->
-        <TextView
-            android:id="@+id/txtNomeScheda"
+        <!-- INTESTAZIONE: TITOLI A SINISTRA E MENU A DESTRA -->
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Chest &amp; Biceps"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/txtInfoEsercizi"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="4 Esercizi"
-            android:textColor="#AAAAAA"
-            android:textSize="14sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_toStartOf="@id/btnOpzioniScheda"
+                android:layout_centerVertical="true">
+
+                <TextView
+                    android:id="@+id/txtNomeScheda"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Chest &amp; Biceps"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtInfoEsercizi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="4 Esercizi"
+                    android:textColor="#AAAAAA"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- ICONA 3 PUNTINI -->
+            <ImageButton
+                android:id="@+id/btnOpzioniScheda"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_more"
+                app:tint="@android:color/white" />
+        </RelativeLayout>
 
         <!-- BOTTONI DI AZIONE (AVVIA E MODIFICA) -->
         <LinearLayout
@@ -41,7 +65,6 @@
             android:layout_marginTop="16dp"
             android:orientation="horizontal">
 
-            <!-- BOTTONE AVVIA ALLENAMENTO -->
             <Button
                 android:id="@+id/btnAvviaAllenamento"
                 android:layout_width="0dp"
@@ -53,7 +76,6 @@
                 android:textAllCaps="false"
                 android:textColor="@android:color/white" />
 
-            <!-- BOTTONE MODIFICA SCHEDA -->
             <Button
                 android:id="@+id/btnModificaScheda"
                 android:layout_width="0dp"
@@ -64,9 +86,6 @@
                 android:text="✏️ Modifica"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white" />
-
         </LinearLayout>
-
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>

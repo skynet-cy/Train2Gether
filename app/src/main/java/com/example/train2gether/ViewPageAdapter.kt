@@ -10,8 +10,8 @@ class ViewPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activi
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> HomeFragment()        // Pagina 0: Home / Storico (A sinistra)
-            1 -> AllenamentoFragment() // Pagina 1: Allenamento (A destra)
+            0 -> HomeFragment()
+            1 -> AllenamentoFragment()
             else -> HomeFragment()
         }
     }

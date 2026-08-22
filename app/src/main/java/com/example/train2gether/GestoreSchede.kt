@@ -15,7 +15,6 @@ object GestoreSchede {
     private const val PREFS_NAME = "Train2getherPrefs"
     private const val KEY_SCHEDE = "SchedeAllenamento"
 
-    // 2. DICHIARAZIONE DI gson (mancava questa riga!)
     private val gson = Gson()
 
     private fun getPreferences(context: Context) =

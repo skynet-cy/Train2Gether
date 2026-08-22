@@ -4,13 +4,21 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
 import android.widget.Button
-import android.widget.EditText
+import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.train2gether.data.AppDatabase
+import com.example.train2gether.data.Esercizio
+import com.google.android.material.chip.ChipGroup
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AllenamentoActivity : AppCompatActivity() {
 
@@ -28,28 +36,28 @@ class AllenamentoActivity : AppCompatActivity() {
     private var schedaAttuale: SchedaAllenamento? = null
 
     private var countDownTimer: CountDownTimer? = null
+    private var isDataModified: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Imposta la barra di stato nera o trasparente
         window.statusBarColor = android.graphics.Color.parseColor("#121212")
 
-        // Per nascondere del tutto la Action Bar di sistema se presente:
         supportActionBar?.hide()
         setContentView(R.layout.activity_allenamento)
 
-        // Inizializzazione Viste
         txtNomeSchedaTitle = findViewById(R.id.txtNomeSchedaTitle)
         txtTimer = findViewById(R.id.txtTimer)
         recyclerEsercizi = findViewById(R.id.recyclerEsercizi)
         btnAggiungiEsercizio = findViewById(R.id.btnAggiungiEsercizio)
         btnSalvaOppureTermina = findViewById(R.id.btnSalvaOppureTermina)
 
-        // Svuotiamo/nascondiamo la scritta del timer in alto all'avvio
         txtTimer.text = ""
         txtTimer.visibility = View.GONE
 
-        // Recupera dati passati tramite Intent
+        txtTimer.setOnClickListener {
+            fermaTimerRecupero()
+        }
+
         schedaId = intent.getStringExtra("SCHEDA_ID")
         isModifica = intent.getBooleanExtra("IS_MODIFICA", false)
 
@@ -65,47 +73,65 @@ class AllenamentoActivity : AppCompatActivity() {
             txtNomeSchedaTitle.text = "Nuova Scheda"
         }
 
-        // Impostazione testo bottone finale
         if (isModifica) {
             btnSalvaOppureTermina.text = "Salva Modifiche"
         } else {
             btnSalvaOppureTermina.text = "Termina Allenamento"
         }
 
-        // Configurazione RecyclerView Esercizi
         recyclerEsercizi.layoutManager = LinearLayoutManager(this)
 
         adapter = EsercizioAdapter(
             listaEsercizi = listaEserciziMutable,
             isModifica = isModifica,
             onSerieSpuntata = { tempoSecondi ->
-                // Avvia il timer specifico dell'esercizio spuntato
-                avviaTimerRecupero(tempoSecondi * 1000)
+                isDataModified = true
+                avviaTimerRecupero(tempoSecondi * 1000L)
+            },
+            onDatoModificato = {
+                isDataModified = true
             }
         )
         recyclerEsercizi.adapter = adapter
 
-        // Bottone Aggiungi Esercizio
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                gestisciUscita()
+            }
+        })
+
         btnAggiungiEsercizio.setOnClickListener {
             mostraPopupNuovoEsercizio()
         }
 
-        // Bottone Salva / Termina
         btnSalvaOppureTermina.setOnClickListener {
-            if (isModifica) {
-                salvaScheda()
-                Toast.makeText(this, "Scheda salvata con successo!", Toast.LENGTH_SHORT).show()
-                finish()
-            } else {
-                Toast.makeText(this, "Allenamento terminato e registrato! 💪", Toast.LENGTH_SHORT).show()
-                finish()
-            }
+            gestisciUscita()
+        }
+    }
+
+    private fun gestisciUscita() {
+        if (isDataModified) {
+            AlertDialog.Builder(this)
+                .setTitle("Modifiche non salvate")
+                .setMessage("Hai modificato i dati dell'allenamento. Vuoi salvarli prima di uscire?")
+                .setPositiveButton("Salva") { _, _ ->
+                    salvaScheda()
+                    isDataModified = false
+                    finish()
+                }
+                .setNegativeButton("Esci senza salvare") { _, _ ->
+                    isDataModified = false
+                    finish()
+                }
+                .setNeutralButton("Annulla", null)
+                .show()
+        } else {
+            finish()
         }
     }
 
     private fun avviaTimerRecupero(millis: Long) {
-        countDownTimer?.cancel() // Cancella eventuali timer attivi in precedenza
-
+        countDownTimer?.cancel()
         txtTimer.visibility = View.VISIBLE
 
         countDownTimer = object : CountDownTimer(millis, 1000) {
@@ -113,15 +139,11 @@ class AllenamentoActivity : AppCompatActivity() {
                 val totalSeconds = millisUntilFinished / 1000
                 val minuti = totalSeconds / 60
                 val secondi = totalSeconds % 60
-
-                // Mostra il conto alla rovescia formattato come: "Recupero in corso: 02:00"
-                txtTimer.text = String.format("Recupero in corso: %02d:%02d", minuti, secondi)
+                txtTimer.text = String.format("Recupero in corso: %02d:%02d (Tocca per saltare)", minuti, secondi)
             }
 
             override fun onFinish() {
                 txtTimer.text = "Recupero Terminato! 💪"
-
-                // Scompare dopo 3 secondi dalla fine del recupero
                 txtTimer.postDelayed({
                     if (!isFinishing) {
                         txtTimer.text = ""
@@ -132,31 +154,97 @@ class AllenamentoActivity : AppCompatActivity() {
         }.start()
     }
 
-    private fun mostraPopupNuovoEsercizio() {
-        val inputNomeEsercizio = EditText(this).apply {
-            hint = "Es. Panca Piana, Squat, Lat Machine..."
-        }
+    private fun fermaTimerRecupero() {
+        countDownTimer?.cancel()
+        countDownTimer = null
+        txtTimer.text = "Recupero saltato ⏭️"
+        txtTimer.postDelayed({
+            if (!isFinishing) {
+                txtTimer.text = ""
+                txtTimer.visibility = View.GONE
+            }
+        }, 1000)
+    }
 
-        AlertDialog.Builder(this)
-            .setTitle("Nuovo Esercizio")
-            .setMessage("Inserisci il nome dell'esercizio:")
-            .setView(inputNomeEsercizio)
-            .setPositiveButton("Aggiungi") { _, _ ->
-                val nome = inputNomeEsercizio.text.toString().trim()
-                if (nome.isNotEmpty()) {
+    private fun mostraPopupNuovoEsercizio() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_selezione_esercizio, null)
+        val searchView = dialogView.findViewById<SearchView>(R.id.searchEsercizio)
+        val chipGroup = dialogView.findViewById<ChipGroup>(R.id.chipGroupGruppi)
+        val recyclerCatalogo = dialogView.findViewById<RecyclerView>(R.id.recyclerCatalogo)
+
+        var listaCompleta = listOf<Esercizio>()
+        val listaFiltrata = mutableListOf<Esercizio>()
+        var dialogAdapter: CatalogoDialogAdapter? = null
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Seleziona Esercizio")
+            .setView(dialogView)
+            .setNegativeButton("Annulla", null)
+            .create()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val db = AppDatabase.getDatabase(this@AllenamentoActivity)
+            listaCompleta = db.esercizioDao().getTuttiEsercizi()
+            listaFiltrata.addAll(listaCompleta)
+
+            withContext(Dispatchers.Main) {
+                dialogAdapter = CatalogoDialogAdapter(listaFiltrata) { esercizioSelezionato ->
                     val nuovoEsercizio = EsercizioConSerie(
-                        nomeEsercizio = nome,
-                        tempoRecuperoSecondi = 60, // Default 60s
+                        nomeEsercizio = esercizioSelezionato.nome,
+                        tempoRecuperoSecondi = 60,
                         listaSerie = mutableListOf(SerieEsercizio(1, 0.0, 0))
                     )
                     listaEserciziMutable.add(nuovoEsercizio)
                     adapter.notifyItemInserted(listaEserciziMutable.size - 1)
-                } else {
-                    Toast.makeText(this, "Inserisci un nome valido!", Toast.LENGTH_SHORT).show()
+                    isDataModified = true // 🟢 Segna modificato
+                    dialog.dismiss()
                 }
+                recyclerCatalogo.layoutManager = LinearLayoutManager(this@AllenamentoActivity)
+                recyclerCatalogo.adapter = dialogAdapter
             }
-            .setNegativeButton("Annulla", null)
-            .show()
+        }
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean = false
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val query = newText.orEmpty().lowercase()
+                listaFiltrata.clear()
+                listaFiltrata.addAll(listaCompleta.filter { it.nome.lowercase().contains(query) })
+                dialogAdapter?.notifyDataSetChanged()
+                return true
+            }
+        })
+
+        chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val chipId = checkedIds.firstOrNull()
+            val gruppoSelezionato = if (chipId == R.id.chipPetto) {
+                "Petto"
+            } else if (chipId == R.id.chipBicipiti) {
+                "Bicipiti"
+            } else if (chipId == R.id.chipTricipiti) {
+                "Tricipiti"
+            } else if (chipId == R.id.chipSpalle) {
+                "Spalle"
+            } else if (chipId == R.id.chipDorsali) {
+                "Dorsali"
+            } else if (chipId == R.id.chipGambe) {
+                "Quadricipiti"
+            } else {
+                "Tutti"
+            }
+
+            listaFiltrata.clear()
+            if (gruppoSelezionato == "Tutti") {
+                listaFiltrata.addAll(listaCompleta)
+            } else {
+                listaFiltrata.addAll(listaCompleta.filter {
+                    it.gruppoMuscolare.equals(gruppoSelezionato, ignoreCase = true)
+                })
+            }
+            dialogAdapter?.notifyDataSetChanged()
+        }
+
+        dialog.show()
     }
 
     private fun salvaScheda() {

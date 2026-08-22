@@ -17,7 +17,8 @@ import androidx.recyclerview.widget.RecyclerView
 class EsercizioAdapter(
     private val listaEsercizi: MutableList<EsercizioConSerie>,
     private val isModifica: Boolean,
-    private val onSerieSpuntata: (Long) -> Unit // Restituisce i secondi di recupero dell'esercizio
+    private val onSerieSpuntata: (Long) -> Unit,
+    private val onDatoModificato: () -> Unit
 ) : RecyclerView.Adapter<EsercizioAdapter.EsercizioViewHolder>() {
 
     class EsercizioViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -38,18 +39,16 @@ class EsercizioAdapter(
         val esercizio = listaEsercizi[position]
         holder.txtNomeEsercizio.text = esercizio.nomeEsercizio
 
-        // Formatta e mostra il tempo in MM:SS (es. 02:00)
         aggiornaTestoTimer(holder.txtTimerEsercizio, esercizio.tempoRecuperoSecondi)
 
-        // Click sulla targhetta ➔ Apre DIRETTAMENTE il selettore minuti:secondi
         holder.txtTimerEsercizio.setOnClickListener {
             mostraPickerPersonalizzato(holder.itemView.context, esercizio) { nuoviSecondi ->
                 esercizio.tempoRecuperoSecondi = nuoviSecondi
                 aggiornaTestoTimer(holder.txtTimerEsercizio, nuoviSecondi)
+                onDatoModificato()
             }
         }
 
-        // Configurazione RecyclerView delle serie
         holder.recyclerSerie.layoutManager = LinearLayoutManager(holder.itemView.context)
 
         lateinit var serieAdapter: SerieAdapter
@@ -57,8 +56,8 @@ class EsercizioAdapter(
             listaSerie = esercizio.listaSerie,
             isModifica = isModifica,
             onSerieSpuntata = {
+                onDatoModificato()
                 if (!isModifica) {
-                    // Fa partire il timer specifico dell'esercizio corrente
                     onSerieSpuntata(esercizio.tempoRecuperoSecondi)
                 }
             },
@@ -66,26 +65,27 @@ class EsercizioAdapter(
                 if (index in 0 until esercizio.listaSerie.size) {
                     esercizio.listaSerie.removeAt(index)
                     serieAdapter.notifyDataSetChanged()
+                    onDatoModificato()
                 }
             }
         )
 
         holder.recyclerSerie.adapter = serieAdapter
 
-        // Bottone aggiungi serie
         holder.btnAggiungiSerie.setOnClickListener {
             val nuovoSet = esercizio.listaSerie.size + 1
             esercizio.listaSerie.add(SerieEsercizio(nuovoSet, 0.0, 0))
             serieAdapter.notifyItemInserted(esercizio.listaSerie.size - 1)
+            onDatoModificato()
         }
 
-        // Bottone elimina esercizio
         holder.btnEliminaEsercizio.setOnClickListener {
             val pos = holder.adapterPosition
             if (pos != RecyclerView.NO_POSITION) {
                 listaEsercizi.removeAt(pos)
                 notifyItemRemoved(pos)
                 notifyItemRangeChanged(pos, listaEsercizi.size)
+                onDatoModificato()
             }
         }
     }
@@ -98,7 +98,6 @@ class EsercizioAdapter(
         textView.text = String.format("⏱️ %02d:%02d", minuti, secondi)
     }
 
-    // Dialog con le rotelle direttamente accessibile al click
     private fun mostraPickerPersonalizzato(
         context: Context,
         esercizio: EsercizioConSerie,
@@ -110,16 +109,14 @@ class EsercizioAdapter(
             gravity = Gravity.CENTER
         }
 
-        // Formattatore per mostrare sempre 2 cifre (00, 01, 02, 03...)
         val twoDigitFormatter = NumberPicker.Formatter { value ->
             String.format("%02d", value)
         }
 
-        // Selettore Minuti (00, 01, 02...)
         val pickerMinuti = NumberPicker(context).apply {
             minValue = 0
             maxValue = 15
-            setFormatter(twoDigitFormatter) // 👈 Formato a 2 cifre
+            setFormatter(twoDigitFormatter)
             value = (esercizio.tempoRecuperoSecondi / 60).toInt()
         }
 
@@ -129,11 +126,10 @@ class EsercizioAdapter(
             setPadding(20, 0, 20, 0)
         }
 
-        // Selettore Secondi (00, 01, 02...)
         val pickerSecondi = NumberPicker(context).apply {
             minValue = 0
             maxValue = 59
-            setFormatter(twoDigitFormatter) // 👈 Formato a 2 cifre
+            setFormatter(twoDigitFormatter)
             value = (esercizio.tempoRecuperoSecondi % 60).toInt()
         }
 

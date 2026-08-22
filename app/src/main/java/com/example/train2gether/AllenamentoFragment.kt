@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -34,20 +35,18 @@ class AllenamentoFragment : Fragment() {
             listaSchede = listaSchedeMutable,
             onAvviaClick = { scheda ->
                 if (scheda.listaEsercizi.isEmpty()) {
-                    // 🚫 Se non ci sono esercizi, blocchiamo l'avvio
                     Toast.makeText(
                         requireContext(),
                         "Impossibile avviare: aggiungi almeno un esercizio alla scheda!",
                         Toast.LENGTH_LONG
                     ).show()
                 } else {
-                    // 🟢 Se ci sono esercizi, avviamo l'allenamento
                     val intent = Intent(requireContext(), AllenamentoActivity::class.java)
                     intent.putExtra("SCHEDA_ID", scheda.id)
                     intent.putExtra("IS_MODIFICA", false)
                     startActivity(intent)
                 }
-            }, // 👈 Aggiunta virgola mancante qui
+            },
             onModificaClick = { scheda ->
                 val intent = Intent(requireContext(), AllenamentoActivity::class.java)
                 intent.putExtra("SCHEDA_ID", scheda.id)
@@ -62,6 +61,39 @@ class AllenamentoFragment : Fragment() {
         )
 
         recyclerSchede.adapter = adapter
+
+        val touchHelperCallback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val posizioneIniziale = viewHolder.adapterPosition
+                val posizioneFinale = target.adapterPosition
+                adapter.spostaElemento(posizioneIniziale, posizioneFinale)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            }
+
+            override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+                super.onSelectedChanged(viewHolder, actionState)
+                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+                    viewHolder?.itemView?.alpha = 0.6f
+                }
+            }
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                viewHolder.itemView.alpha = 1.0f
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(touchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(recyclerSchede)
 
         btnNuovaScheda.setOnClickListener {
             mostraPopupNuovaScheda()
@@ -96,7 +128,7 @@ class AllenamentoFragment : Fragment() {
                     val nuovaScheda = SchedaAllenamento(
                         id = System.currentTimeMillis().toString(),
                         nomeScheda = nomeScheda,
-                        listaEsercizi = emptyList() // 👈 Rimossa la virgola superflua
+                        listaEsercizi = emptyList()
                     )
 
                     GestoreSchede.salvaScheda(requireContext(), nuovaScheda)
