@@ -21,12 +21,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <!-- NOME ESERCIZIO: bloccato a sinistra e si ferma prima del timer -->
             <TextView
                 android:id="@+id/txtNomeEsercizio"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/txtTimerEsercizio"
                 android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text="Nome Esercizio"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
@@ -48,6 +53,7 @@
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
+            <!-- BOTTONE ELIMINA ESERCIZIO -->
             <ImageButton
                 android:id="@+id/btnEliminaEsercizio"
                 android:layout_width="36dp"
