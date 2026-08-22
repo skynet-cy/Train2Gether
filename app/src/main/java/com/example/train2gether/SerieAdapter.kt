@@ -17,7 +17,8 @@ class SerieAdapter(
     private val listaSerie: MutableList<SerieEsercizio>,
     private val isModifica: Boolean,
     private val onSerieSpuntata: () -> Unit,
-    private val onEliminaSerie: (Int) -> Unit
+    private val onEliminaSerie: (Int) -> Unit,
+    private val onDatoModificato: () -> Unit
 ) : RecyclerView.Adapter<SerieAdapter.SerieViewHolder>() {
 
     class SerieViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -53,6 +54,7 @@ class SerieAdapter(
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
                 data.kg = s.toString().toDoubleOrNull() ?: 0.0
+                onDatoModificato()
             }
         })
 
@@ -61,6 +63,7 @@ class SerieAdapter(
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
                 data.reps = s.toString().toIntOrNull() ?: 0
+                onDatoModificato()
             }
         })
 

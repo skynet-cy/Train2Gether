@@ -67,6 +67,9 @@ class EsercizioAdapter(
                     serieAdapter.notifyDataSetChanged()
                     onDatoModificato()
                 }
+            },
+            onDatoModificato = {
+                onDatoModificato()
             }
         )
 

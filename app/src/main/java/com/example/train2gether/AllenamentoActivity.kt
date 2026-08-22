@@ -61,14 +61,19 @@ class AllenamentoActivity : AppCompatActivity() {
         schedaId = intent.getStringExtra("SCHEDA_ID")
         isModifica = intent.getBooleanExtra("IS_MODIFICA", false)
 
+        // 🟢 CARICAMENTO ASINCRONO DAL DATABASE ROOM
         if (schedaId != null) {
-            schedaAttuale = GestoreSchede.caricaTutteLeSchede(this).find { it.id == schedaId }
-        }
+            lifecycleScope.launch {
+                val tutteLeSchede = GestoreSchede.caricaTutteLeSchede(this@AllenamentoActivity)
+                schedaAttuale = tutteLeSchede.find { it.id == schedaId }
 
-        if (schedaAttuale != null) {
-            txtNomeSchedaTitle.text = schedaAttuale!!.nomeScheda
-            listaEserciziMutable.clear()
-            listaEserciziMutable.addAll(schedaAttuale!!.listaEsercizi)
+                if (schedaAttuale != null) {
+                    txtNomeSchedaTitle.text = schedaAttuale!!.nomeScheda
+                    listaEserciziMutable.clear()
+                    listaEserciziMutable.addAll(schedaAttuale!!.listaEsercizi)
+                    adapter.notifyDataSetChanged()
+                }
+            }
         } else {
             txtNomeSchedaTitle.text = "Nuova Scheda"
         }
@@ -105,7 +110,24 @@ class AllenamentoActivity : AppCompatActivity() {
         }
 
         btnSalvaOppureTermina.setOnClickListener {
-            gestisciUscita()
+            if (!isModifica) {
+                gestisciUscita()
+            } else {
+                val idScheda = schedaId ?: System.currentTimeMillis().toString()
+                val nomeScheda = txtNomeSchedaTitle.text.toString()
+                val schedaDaSalvare = SchedaAllenamento(
+                    id = idScheda,
+                    nomeScheda = nomeScheda,
+                    listaEsercizi = listaEserciziMutable
+                )
+
+                lifecycleScope.launch {
+                    GestoreSchede.salvaScheda(this@AllenamentoActivity, schedaDaSalvare)
+                    isDataModified = false
+                    Toast.makeText(this@AllenamentoActivity, "Modifiche salvate con successo!", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
         }
     }
 
@@ -115,9 +137,21 @@ class AllenamentoActivity : AppCompatActivity() {
                 .setTitle("Modifiche non salvate")
                 .setMessage("Hai modificato i dati dell'allenamento. Vuoi salvarli prima di uscire?")
                 .setPositiveButton("Salva") { _, _ ->
-                    salvaScheda()
-                    isDataModified = false
-                    finish()
+                    // 🟢 SALVATAGGIO ASINCRONO PRIMA DI USCIRE
+                    val idScheda = schedaId ?: System.currentTimeMillis().toString()
+                    val nomeScheda = txtNomeSchedaTitle.text.toString()
+                    val schedaDaSalvare = SchedaAllenamento(
+                        id = idScheda,
+                        nomeScheda = nomeScheda,
+                        listaEsercizi = listaEserciziMutable
+                    )
+
+                    lifecycleScope.launch {
+                        GestoreSchede.salvaScheda(this@AllenamentoActivity, schedaDaSalvare)
+                        isDataModified = false
+                        Toast.makeText(this@AllenamentoActivity, "Scheda salvata!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
                 }
                 .setNegativeButton("Esci senza salvare") { _, _ ->
                     isDataModified = false
@@ -126,7 +160,20 @@ class AllenamentoActivity : AppCompatActivity() {
                 .setNeutralButton("Annulla", null)
                 .show()
         } else {
-            finish()
+            // Se non ci sono modifiche ma si preme Termina Allenamento, salviamo comunque lo stato attuale o usciamo
+            val idScheda = schedaId ?: System.currentTimeMillis().toString()
+            val nomeScheda = txtNomeSchedaTitle.text.toString()
+            val schedaDaSalvare = SchedaAllenamento(
+                id = idScheda,
+                nomeScheda = nomeScheda,
+                listaEsercizi = listaEserciziMutable
+            )
+
+            lifecycleScope.launch {
+                GestoreSchede.salvaScheda(this@AllenamentoActivity, schedaDaSalvare)
+                Toast.makeText(this@AllenamentoActivity, "Allenamento salvato con successo! 💪", Toast.LENGTH_SHORT).show()
+                finish()
+            }
         }
     }
 
@@ -196,7 +243,7 @@ class AllenamentoActivity : AppCompatActivity() {
                     )
                     listaEserciziMutable.add(nuovoEsercizio)
                     adapter.notifyItemInserted(listaEserciziMutable.size - 1)
-                    isDataModified = true // 🟢 Segna modificato
+                    isDataModified = true
                     dialog.dismiss()
                 }
                 recyclerCatalogo.layoutManager = LinearLayoutManager(this@AllenamentoActivity)
@@ -245,19 +292,6 @@ class AllenamentoActivity : AppCompatActivity() {
         }
 
         dialog.show()
-    }
-
-    private fun salvaScheda() {
-        val idScheda = schedaId ?: System.currentTimeMillis().toString()
-        val nomeScheda = txtNomeSchedaTitle.text.toString()
-
-        val schedaDaSalvare = SchedaAllenamento(
-            id = idScheda,
-            nomeScheda = nomeScheda,
-            listaEsercizi = listaEserciziMutable
-        )
-
-        GestoreSchede.salvaScheda(this, schedaDaSalvare)
     }
 
     override fun onDestroy() {

@@ -1,8 +1,12 @@
 package com.example.train2gether
 
 import android.content.Context
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.example.train2gether.data.AppDatabase
+import com.example.train2gether.data.NuovaSeriePrevista
+import com.example.train2gether.data.NuovoEsercizioScheda
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 
 data class SchedaAllenamento(
     var id: String,
@@ -12,39 +16,98 @@ data class SchedaAllenamento(
 
 object GestoreSchede {
 
-    private const val PREFS_NAME = "Train2getherPrefs"
-    private const val KEY_SCHEDE = "SchedeAllenamento"
+    // Carica tutte le schede dal Database Room in modo asincrono
+    suspend fun caricaTutteLeSchede(context: Context): List<SchedaAllenamento> = withContext(Dispatchers.IO) {
+        val db = AppDatabase.getDatabase(context)
+        val schedaDao = db.schedaDao()
 
-    private val gson = Gson()
+        val riepiloghi = schedaDao.getTutteSchede().first()
+        val listaSchede = mutableListOf<SchedaAllenamento>()
 
-    private fun getPreferences(context: Context) =
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        for (riepilogo in riepiloghi) {
+            val schedaCompleta = schedaDao.getSchedaCompleta(riepilogo.id)
+            if (schedaCompleta != null) {
+                // 🟢 CORRETTO: adesso usa eserciziOrdinati() come definito nelle tue classi
+                val eserciziConvertiti = schedaCompleta.eserciziOrdinati().map { esCompleto ->
+                    EsercizioConSerie(
+                        nomeEsercizio = esCompleto.esercizio.nome,
+                        tempoRecuperoSecondi = esCompleto.esercizioScheda.riposoSecondi.toLong(),
+                        listaSerie = esCompleto.serieOrdinate().map { seriePrevista ->
+                            SerieEsercizio(
+                                numeroSet = seriePrevista.numeroSerie,
+                                kg = seriePrevista.peso ?: 0.0,
+                                reps = seriePrevista.ripetizioni
+                            )
+                        }.toMutableList()
+                    )
+                }
 
-    fun salvaScheda(context: Context, nuovaScheda: SchedaAllenamento) {
-        val schede = caricaTutteLeSchede(context).toMutableList()
-        val index = schede.indexOfFirst { it.id == nuovaScheda.id }
-        if (index != -1) {
-            schede[index] = nuovaScheda
-        } else {
-            schede.add(nuovaScheda)
+                listaSchede.add(
+                    SchedaAllenamento(
+                        id = schedaCompleta.scheda.id.toString(),
+                        nomeScheda = schedaCompleta.scheda.nome,
+                        listaEsercizi = eserciziConvertiti
+                    )
+                )
+            }
         }
-        val json = gson.toJson(schede)
-        getPreferences(context).edit().putString(KEY_SCHEDE, json).apply()
+        return@withContext listaSchede
     }
 
-    fun caricaTutteLeSchede(context: Context): List<SchedaAllenamento> {
-        val json = getPreferences(context).getString(KEY_SCHEDE, null) ?: return emptyList()
-        val type = object : TypeToken<List<SchedaAllenamento>>() {}.type
-        return gson.fromJson(json, type)
+    // Salva o aggiorna una scheda nel Database Room sfruttando i metodi transazionali del DAO
+    suspend fun salvaScheda(context: Context, scheda: SchedaAllenamento) = withContext(Dispatchers.IO) {
+        val db = AppDatabase.getDatabase(context)
+        val schedaDao = db.schedaDao()
+        val esercizioDao = db.esercizioDao()
+
+        val idNumerico = scheda.id.toIntOrNull()
+        val eserciziDb = esercizioDao.getTuttiEsercizi()
+
+        val eserciziPerDb = mutableListOf<NuovoEsercizioScheda>()
+
+        for (itemEsercizio in scheda.listaEsercizi) {
+            val esercizioTrovato = eserciziDb.find { it.nome.equals(itemEsercizio.nomeEsercizio, ignoreCase = true) }
+            val esercizioIdDb = esercizioTrovato?.id ?: 1
+
+            val seriePerDb = itemEsercizio.listaSerie.map { serie ->
+                NuovaSeriePrevista(
+                    peso = if (serie.kg > 0) serie.kg else null,
+                    ripetizioni = serie.reps
+                )
+            }
+
+            eserciziPerDb.add(
+                NuovoEsercizioScheda(
+                    esercizioId = esercizioIdDb,
+                    riposoSecondi = itemEsercizio.tempoRecuperoSecondi.toInt(),
+                    serie = seriePerDb
+                )
+            )
+        }
+
+        if (idNumerico != null && schedaDao.getSchedaById(idNumerico) != null) {
+            schedaDao.modificaSchedaCompleta(
+                schedaId = idNumerico,
+                nuovoNome = scheda.nomeScheda,
+                esercizi = eserciziPerDb
+            )
+        } else {
+            schedaDao.creaSchedaCompleta(
+                nome = scheda.nomeScheda,
+                esercizi = eserciziPerDb
+            )
+        }
     }
 
-    fun eliminaScheda(context: Context, schedaId: String) {
-        val schede = caricaTutteLeSchede(context).toMutableList()
-        schede.removeAll { it.id == schedaId }
-        val json = gson.toJson(schede)
-        getPreferences(context).edit().putString(KEY_SCHEDE, json).apply()
-    }
-    fun aggiornaScheda(context: Context, schedaAggiornata: SchedaAllenamento) {
-        salvaScheda(context, schedaAggiornata)
+    // Elimina una scheda dal Database Room
+    suspend fun eliminaScheda(context: Context, schedaId: String) = withContext(Dispatchers.IO) {
+        val schedaDao = AppDatabase.getDatabase(context).schedaDao()
+        val idNumerico = schedaId.toIntOrNull()
+        if (idNumerico != null) {
+            val scheda = schedaDao.getSchedaById(idNumerico)
+            if (scheda != null) {
+                schedaDao.eliminaScheda(scheda)
+            }
+        }
     }
 }

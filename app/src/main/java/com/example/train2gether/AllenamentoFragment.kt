@@ -10,9 +10,11 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
 
 class AllenamentoFragment : Fragment() {
 
@@ -54,9 +56,12 @@ class AllenamentoFragment : Fragment() {
                 startActivity(intent)
             },
             onEliminaClick = { scheda ->
-                GestoreSchede.eliminaScheda(requireContext(), scheda.id)
-                caricaSchedeSalvate()
-                Toast.makeText(requireContext(), "Scheda eliminata", Toast.LENGTH_SHORT).show()
+                // 🟢 ELIMINAZIONE ASINCRONA DAL DATABASE
+                viewLifecycleOwner.lifecycleScope.launch {
+                    GestoreSchede.eliminaScheda(requireContext(), scheda.id)
+                    caricaSchedeSalvate()
+                    Toast.makeText(requireContext(), "Scheda eliminata", Toast.LENGTH_SHORT).show()
+                }
             }
         )
 
@@ -76,8 +81,7 @@ class AllenamentoFragment : Fragment() {
                 return true
             }
 
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            }
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
 
             override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
                 super.onSelectedChanged(viewHolder, actionState)
@@ -108,9 +112,13 @@ class AllenamentoFragment : Fragment() {
     }
 
     private fun caricaSchedeSalvate() {
-        listaSchedeMutable.clear()
-        listaSchedeMutable.addAll(GestoreSchede.caricaTutteLeSchede(requireContext()))
-        adapter.notifyDataSetChanged()
+        // 🟢 CARICAMENTO ASINCRONO DAL DATABASE
+        viewLifecycleOwner.lifecycleScope.launch {
+            val schedeCaricate = GestoreSchede.caricaTutteLeSchede(requireContext())
+            listaSchedeMutable.clear()
+            listaSchedeMutable.addAll(schedeCaricate)
+            adapter.notifyDataSetChanged()
+        }
     }
 
     private fun mostraPopupNuovaScheda() {
@@ -131,8 +139,11 @@ class AllenamentoFragment : Fragment() {
                         listaEsercizi = emptyList()
                     )
 
-                    GestoreSchede.salvaScheda(requireContext(), nuovaScheda)
-                    caricaSchedeSalvate()
+                    // 🟢 SALVATAGGIO ASINCRONO DELLA NUOVA SCHEDA NEL DATABASE
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        GestoreSchede.salvaScheda(requireContext(), nuovaScheda)
+                        caricaSchedeSalvate()
+                    }
                 } else {
                     Toast.makeText(requireContext(), "Inserisci un nome valido!", Toast.LENGTH_SHORT).show()
                 }
