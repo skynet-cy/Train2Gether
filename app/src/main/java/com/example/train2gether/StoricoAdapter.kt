@@ -35,7 +35,10 @@ class StoricoAdapter(
         holder.txtData.text = sdf.format(Date(item.dataInizio))
 
         val minuti = item.durataSecondi / 60
-        holder.txtDettagli.text = "${item.numeroEsercizi} Esercizi • ${item.numeroSerie} Serie • ${minuti}m"
+        val secondi = item.durataSecondi % 60
+        val durataFormattata = String.format("%02d:%02d", minuti, secondi)
+
+        holder.txtDettagli.text = "${item.numeroEsercizi} Esercizi • ${item.numeroSerie} Serie • $durataFormattata"
 
         holder.itemView.setOnClickListener {
             onElementoClick(item)

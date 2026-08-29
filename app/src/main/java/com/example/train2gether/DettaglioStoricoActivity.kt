@@ -51,7 +51,9 @@ class DettaglioStoricoActivity : AppCompatActivity() {
                 val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
                 val dataStr = sdf.format(Date(allenamento.dataInizio))
                 val min = allenamento.durataSecondi / 60
-                txtData.text = "$dataStr • Durata: ${min}m"
+                val sec = allenamento.durataSecondi % 60
+                val durataFormattata = String.format("%02d:%02d", min, sec)
+                txtData.text = "$dataStr • Durata: $durataFormattata"
 
                 val eserciziRaggruppati = allenamentoCompleto.seriePerEsercizio().values.toList()
                 recyclerEsercizi.adapter = EsercizioDettaglioStoricoAdapter(eserciziRaggruppati)

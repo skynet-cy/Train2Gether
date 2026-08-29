@@ -39,6 +39,7 @@ class AllenamentoActivity : AppCompatActivity() {
 
     private var countDownTimer: CountDownTimer? = null
     private var isDataModified: Boolean = false
+    private var tempoInizioMillis: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +53,7 @@ class AllenamentoActivity : AppCompatActivity() {
         recyclerEsercizi = findViewById(R.id.recyclerEsercizi)
         btnAggiungiEsercizio = findViewById(R.id.btnAggiungiEsercizio)
         btnSalvaOppureTermina = findViewById(R.id.btnSalvaOppureTermina)
+        tempoInizioMillis = System.currentTimeMillis()
 
         txtTimer.text = ""
         txtTimer.visibility = View.GONE
@@ -115,7 +117,8 @@ class AllenamentoActivity : AppCompatActivity() {
                 val idSchedaOriginale = schedaId?.toIntOrNull()
                 val nomeScheda = txtNomeSchedaTitle.text.toString()
 
-                val durataSecondi = 600
+                val tempoFineMillis = System.currentTimeMillis()
+                val durataSecondi = ((tempoFineMillis - tempoInizioMillis) / 1000).toInt()
 
                 val totaleSerie = listaEserciziMutable.sumOf { it.listaSerie.size }
                 if (totaleSerie == 0) {
