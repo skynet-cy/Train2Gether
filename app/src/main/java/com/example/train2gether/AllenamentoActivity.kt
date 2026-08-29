@@ -13,8 +13,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.train2gether.data.Allenamento
 import com.example.train2gether.data.AppDatabase
 import com.example.train2gether.data.Esercizio
+import com.example.train2gether.data.SerieEseguita
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -110,7 +112,60 @@ class AllenamentoActivity : AppCompatActivity() {
 
         btnSalvaOppureTermina.setOnClickListener {
             if (!isModifica) {
-                gestisciUscita()
+                val idSchedaOriginale = schedaId?.toIntOrNull()
+                val nomeScheda = txtNomeSchedaTitle.text.toString()
+
+                val durataSecondi = 600
+
+                val totaleSerie = listaEserciziMutable.sumOf { it.listaSerie.size }
+                if (totaleSerie == 0) {
+                    Toast.makeText(this, "Aggiungi almeno una serie prima di terminare!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val db = AppDatabase.getDatabase(this@AllenamentoActivity)
+                    val allenamentoDao = db.allenamentoDao()
+                    val esercizioDao = db.esercizioDao()
+
+                    val nuovoAllenamentoId = allenamentoDao.inserisciAllenamento(
+                        Allenamento(
+                            schedaIdOrigine = idSchedaOriginale,
+                            nomeScheda = nomeScheda,
+                            dataInizio = System.currentTimeMillis(),
+                            durataSecondi = durataSecondi
+                        )
+                    ).toInt()
+
+                    val eserciziDb = esercizioDao.getTuttiEsercizi()
+
+                    var ordineEs = 0
+                    for (itemEsercizio in listaEserciziMutable) {
+                        val esercizioTrovato = eserciziDb.find { it.nome.equals(itemEsercizio.nomeEsercizio, ignoreCase = true) }
+                        val esercizioIdDb = esercizioTrovato?.id ?: 1
+
+                        for (serie in itemEsercizio.listaSerie) {
+                            allenamentoDao.inserisciSerieEseguita(
+                                SerieEseguita(
+                                    allenamentoId = nuovoAllenamentoId,
+                                    esercizioId = esercizioIdDb,
+                                    nomeEsercizio = itemEsercizio.nomeEsercizio,
+                                    ordineEsercizio = ordineEs,
+                                    numeroSerie = serie.numeroSet,
+                                    peso = serie.kg,
+                                    ripetizioni = serie.reps
+                                )
+                            )
+                        }
+                        ordineEs++
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@AllenamentoActivity, "Allenamento completato e salvato! 💪", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                }
+
             } else {
                 val idScheda = schedaId ?: System.currentTimeMillis().toString()
                 val nomeScheda = txtNomeSchedaTitle.text.toString()

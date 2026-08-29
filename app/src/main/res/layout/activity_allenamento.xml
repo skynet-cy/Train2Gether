@@ -8,7 +8,6 @@
     android:background="#121212"
     android:padding="16dp">
 
-    <!-- TITOLO SCHEDA -->
     <TextView
         android:id="@+id/txtNomeSchedaTitle"
         android:layout_width="0dp"
@@ -21,7 +20,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- TEXTVIEW PER IL TIMER DI RECUPERO (Visibile solo quando attivo) -->
     <TextView
         android:id="@+id/txtTimer"
         android:layout_width="match_parent"
@@ -38,7 +36,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/txtNomeSchedaTitle" />
 
-    <!-- RECYCLERVIEW PER LA LISTA DEGLI ESERCIZI -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerEsercizi"
         android:layout_width="0dp"
@@ -50,7 +47,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/txtTimer" />
 
-    <!-- BOTTONE AGGIUNGI ESERCIZIO -->
     <Button
         android:id="@+id/btnAggiungiEsercizio"
         android:layout_width="0dp"
@@ -64,7 +60,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- BOTTONE SALVA MODIFICHE / TERMINA ALLENAMENTO -->
     <Button
         android:id="@+id/btnSalvaOppureTermina"
         android:layout_width="0dp"

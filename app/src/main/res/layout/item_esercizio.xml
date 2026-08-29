@@ -16,12 +16,10 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- INTESTAZIONE ESERCIZIO -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- NOME ESERCIZIO: bloccato a sinistra e si ferma prima del timer -->
             <TextView
                 android:id="@+id/txtNomeEsercizio"
                 android:layout_width="0dp"
@@ -37,7 +35,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- ⏱️ TIMER DEDICATO ALL'ESERCIZIO -->
             <TextView
                 android:id="@+id/txtTimerEsercizio"
                 android:layout_width="wrap_content"
@@ -53,7 +50,6 @@
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
-            <!-- BOTTONE ELIMINA ESERCIZIO -->
             <ImageButton
                 android:id="@+id/btnEliminaEsercizio"
                 android:layout_width="36dp"
@@ -65,14 +61,12 @@
 
         </RelativeLayout>
 
-        <!-- LISTA DELLE SERIE -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerSerie"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp" />
 
-        <!-- BOTTONE AGGIUNGI SET -->
         <Button
             android:id="@+id/btnAggiungiSerieEsercizio"
             android:layout_width="match_parent"

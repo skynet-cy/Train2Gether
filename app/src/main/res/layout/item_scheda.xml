@@ -15,7 +15,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- INTESTAZIONE: TITOLI A SINISTRA E CESTINO A DESTRA -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -46,7 +45,6 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- 🗑️ ICONA CESTINO PER L'ELIMINAZIONE DIRETTA -->
             <ImageButton
                 android:id="@+id/btnEliminaScheda"
                 android:layout_width="48dp"
@@ -58,7 +56,6 @@
                 app:tint="#FF5252" />
         </RelativeLayout>
 
-        <!-- BOTTONI DI AZIONE (AVVIA E MODIFICA) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

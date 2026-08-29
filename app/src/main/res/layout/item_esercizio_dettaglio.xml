@@ -4,11 +4,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="12dp"
-    android:layout_marginVertical="6dp"
+    android:layout_marginVertical="8dp"
     app:cardBackgroundColor="#1E1E1E"
     app:cardCornerRadius="16dp"
-    app:cardElevation="2dp">
+    app:cardElevation="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,32 +16,19 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/txtNomeSchedaStorico"
+            android:id="@+id/txtNomeEsercizioDettaglio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nome Scheda"
+            android:text="Nome Esercizio"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/txtDataStorico"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerSerieEseguiteDettaglio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Data: 22/08/2026"
-            android:textColor="#AAAAAA"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/txtDettagliStorico"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="4 Esercizi • 12 Serie • 10m"
-            android:textColor="#3D5AFE"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="12dp" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
