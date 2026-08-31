@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView
 class EsercizioAdapter(
     private val listaEsercizi: MutableList<EsercizioConSerie>,
     private val isModifica: Boolean,
+    private val onStatoSerieCambiato: (EsercizioConSerie, Int, SerieEsercizio, Boolean) -> Unit,
+    private val onSerieModificata: (EsercizioConSerie, Int, SerieEsercizio) -> Unit,
     private val onSerieSpuntata: (Long) -> Unit,
     private val onDatoModificato: () -> Unit
 ) : RecyclerView.Adapter<EsercizioAdapter.EsercizioViewHolder>() {
@@ -52,22 +54,79 @@ class EsercizioAdapter(
         holder.recyclerSerie.layoutManager = LinearLayoutManager(holder.itemView.context)
 
         lateinit var serieAdapter: SerieAdapter
+
         serieAdapter = SerieAdapter(
+
             listaSerie = esercizio.listaSerie,
+
             isModifica = isModifica,
-            onSerieSpuntata = {
-                onDatoModificato()
-                if (!isModifica) {
-                    onSerieSpuntata(esercizio.tempoRecuperoSecondi)
+
+            onStatoSerieCambiato = {
+                    serie,
+                    checked ->
+
+                val ordineEsercizio =
+                    holder.bindingAdapterPosition
+
+                if (
+                    ordineEsercizio !=
+                    RecyclerView.NO_POSITION
+                ) {
+
+                    onStatoSerieCambiato(
+                        esercizio,
+                        ordineEsercizio,
+                        serie,
+                        checked
+                    )
+
+                    if (
+                        checked &&
+                        !isModifica
+                    ) {
+
+                        onSerieSpuntata(
+                            esercizio
+                                .tempoRecuperoSecondi
+                        )
+                    }
                 }
             },
+
+            onSerieModificata = { serie ->
+
+                val ordineEsercizio =
+                    holder.bindingAdapterPosition
+
+                if (
+                    ordineEsercizio !=
+                    RecyclerView.NO_POSITION
+                ) {
+
+                    onSerieModificata(
+                        esercizio,
+                        ordineEsercizio,
+                        serie
+                    )
+                }
+            },
+
             onEliminaSerie = { index ->
-                if (index in 0 until esercizio.listaSerie.size) {
+
+                if (
+                    index in
+                    0 until
+                    esercizio.listaSerie.size
+                ) {
+
                     esercizio.listaSerie.removeAt(index)
+
                     serieAdapter.notifyDataSetChanged()
+
                     onDatoModificato()
                 }
             },
+
             onDatoModificato = {
                 onDatoModificato()
             }

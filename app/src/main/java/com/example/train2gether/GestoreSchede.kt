@@ -36,7 +36,9 @@ object GestoreSchede {
                                 kg = seriePrevista.peso ?: 0.0,
                                 reps = seriePrevista.ripetizioni
                             )
-                        }.toMutableList()
+                        }.toMutableList(),
+
+                        esercizioId = esCompleto.esercizio.id
                     )
                 }
 
