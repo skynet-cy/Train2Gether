@@ -141,14 +141,22 @@ class EsercizioAdapter(
             onDatoModificato()
         }
 
-        holder.btnEliminaEsercizio.setOnClickListener {
-            val pos = holder.adapterPosition
-            if (pos != RecyclerView.NO_POSITION) {
-                listaEsercizi.removeAt(pos)
-                notifyItemRemoved(pos)
-                notifyItemRangeChanged(pos, listaEsercizi.size)
-                onDatoModificato()
+        if (isModifica) {
+            holder.btnEliminaEsercizio.visibility = View.VISIBLE
+
+            holder.btnEliminaEsercizio.setOnClickListener {
+                val pos = holder.bindingAdapterPosition
+
+                if (pos != RecyclerView.NO_POSITION) {
+                    listaEsercizi.removeAt(pos)
+                    notifyItemRemoved(pos)
+                    notifyItemRangeChanged(pos, listaEsercizi.size)
+                    onDatoModificato()
+                }
             }
+        } else {
+            holder.btnEliminaEsercizio.visibility = View.GONE
+            holder.btnEliminaEsercizio.setOnClickListener(null)
         }
     }
 

@@ -231,17 +231,19 @@ class SerieAdapter(
         )
 
 
-        holder.btnElimina.setOnClickListener {
+        if (isModifica) {
+            holder.btnElimina.visibility = View.VISIBLE
 
-            val pos =
-                holder.bindingAdapterPosition
+            holder.btnElimina.setOnClickListener {
+                val pos = holder.bindingAdapterPosition
 
-            if (
-                pos !=
-                RecyclerView.NO_POSITION
-            ) {
-                onEliminaSerie(pos)
+                if (pos != RecyclerView.NO_POSITION) {
+                    onEliminaSerie(pos)
+                }
             }
+        } else {
+            holder.btnElimina.visibility = View.GONE
+            holder.btnElimina.setOnClickListener(null)
         }
     }
 
