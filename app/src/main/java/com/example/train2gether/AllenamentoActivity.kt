@@ -105,6 +105,11 @@ class AllenamentoActivity : AppCompatActivity() {
         btnSalvaOppureTermina.text =
             if (isModifica) "Salva Modifiche" else "Termina Allenamento"
 
+        if (!isModifica){
+            btnAggiungiEsercizio.isEnabled= false
+            btnSalvaOppureTermina.isEnabled = false
+        }
+
         if (schedaId != null) {
             caricaScheda()
         } else {
@@ -154,12 +159,25 @@ class AllenamentoActivity : AppCompatActivity() {
 
             txtNomeSchedaTitle.text = scheda.nomeScheda
 
+            if(!isModifica && allenamentoId == null){
+                try{
+                    creaAllenamentoNelDatabase(scheda)
+                }catch(e: Exception){
+                    Toast.makeText(this@AllenamentoActivity,
+                        "Errore durante avvio alllenamento",
+                        Toast.LENGTH_SHORT).show()
+                    finish()
+                    return@launch
+                }
+            }
+
             listaEserciziMutable.clear()
             listaEserciziMutable.addAll(scheda.listaEsercizi)
             adapter.notifyDataSetChanged()
 
-            if (!isModifica && allenamentoId == null) {
-                creaAllenamentoNelDatabase(scheda)
+            if(!isModifica){
+                btnAggiungiEsercizio.isEnabled=true
+                btnSalvaOppureTermina.isEnabled=true
             }
         }
     }
