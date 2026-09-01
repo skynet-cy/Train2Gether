@@ -1,4 +1,5 @@
 package com.example.train2gether
+
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -51,7 +52,7 @@ class AllenamentoFragment : Fragment() {
                     ).show()
                 } else {
                     val intent = Intent(requireContext(), AllenamentoActivity::class.java)
-                    intent.putExtra("SCHEDA_ID", scheda.id.toString())
+                    intent.putExtra("SCHEDA_ID", scheda.id)
                     intent.putExtra("IS_MODIFICA", false)
                     startActivity(intent)
                 }
@@ -59,7 +60,7 @@ class AllenamentoFragment : Fragment() {
 
             onModificaClick = { scheda ->
                 val intent = Intent(requireContext(), AllenamentoActivity::class.java)
-                intent.putExtra("SCHEDA_ID", scheda.id.toString())
+                intent.putExtra("SCHEDA_ID", scheda.id)
                 intent.putExtra("IS_MODIFICA", true)
                 startActivity(intent)
             },
@@ -74,7 +75,7 @@ class AllenamentoFragment : Fragment() {
                         viewLifecycleOwner.lifecycleScope.launch {
                             GestoreSchede.eliminaScheda(
                                 requireContext(),
-                                scheda.id.toString()
+                                scheda.id
                             )
 
                             Toast.makeText(
@@ -130,7 +131,7 @@ class AllenamentoFragment : Fragment() {
 
                 if (nomeScheda.isNotEmpty()) {
                     val nuovaScheda = SchedaAllenamento(
-                        id = System.currentTimeMillis().toString(),
+                        id = null,
                         nomeScheda = nomeScheda,
                         listaEsercizi = emptyList()
                     )

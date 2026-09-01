@@ -8,7 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 data class SchedaAllenamento(
-    var id: String,
+    var id: Int?,
     var nomeScheda: String,
     var listaEsercizi: List<EsercizioConSerie>
 )
@@ -17,14 +17,12 @@ object GestoreSchede {
 
     suspend fun caricaScheda(
         context: Context,
-        schedaId: String
+        schedaId: Int
     ): SchedaAllenamento? = withContext(Dispatchers.IO) {
 
-        val idNumerico = schedaId.toIntOrNull() ?: return@withContext null
         val schedaDao = AppDatabase.getDatabase(context).schedaDao()
-
         val schedaCompleta =
-            schedaDao.getSchedaCompleta(idNumerico) ?: return@withContext null
+            schedaDao.getSchedaCompleta(schedaId) ?: return@withContext null
 
         val eserciziConvertiti = schedaCompleta.eserciziOrdinati().map { esCompleto ->
             EsercizioConSerie(
@@ -44,7 +42,7 @@ object GestoreSchede {
         }
 
         SchedaAllenamento(
-            id = schedaCompleta.scheda.id.toString(),
+            id = schedaCompleta.scheda.id,
             nomeScheda = schedaCompleta.scheda.nome,
             listaEsercizi = eserciziConvertiti
         )
@@ -55,12 +53,10 @@ object GestoreSchede {
         scheda: SchedaAllenamento
     ) = withContext(Dispatchers.IO) {
 
-        val db = AppDatabase.getDatabase(context)
-        val schedaDao = db.schedaDao()
-        val idNumerico = scheda.id.toIntOrNull()
+        val schedaDao = AppDatabase.getDatabase(context).schedaDao()
+        val idScheda = scheda.id
 
         val eserciziPerDb = scheda.listaEsercizi.map { itemEsercizio ->
-
             require(itemEsercizio.esercizioId > 0) {
                 "ID esercizio non valido per ${itemEsercizio.nomeEsercizio}"
             }
@@ -79,15 +75,15 @@ object GestoreSchede {
             )
         }
 
-        if (idNumerico != null && schedaDao.getSchedaById(idNumerico) != null) {
-            schedaDao.modificaSchedaCompleta(
-                schedaId = idNumerico,
-                nuovoNome = scheda.nomeScheda,
+        if (idScheda == null) {
+            schedaDao.creaSchedaCompleta(
+                nome = scheda.nomeScheda,
                 esercizi = eserciziPerDb
             )
         } else {
-            schedaDao.creaSchedaCompleta(
-                nome = scheda.nomeScheda,
+            schedaDao.modificaSchedaCompleta(
+                schedaId = idScheda,
+                nuovoNome = scheda.nomeScheda,
                 esercizi = eserciziPerDb
             )
         }
@@ -95,18 +91,16 @@ object GestoreSchede {
 
     suspend fun eliminaScheda(
         context: Context,
-        schedaId: String
+        schedaId: Int
     ) = withContext(Dispatchers.IO) {
 
         val schedaDao = AppDatabase.getDatabase(context).schedaDao()
-        val idNumerico = schedaId.toIntOrNull()
 
-        if (idNumerico != null) {
-            val scheda = schedaDao.getSchedaById(idNumerico)
+        // Manteniamo la SELECT perché @Delete richiede l'entità Scheda.
+        val scheda = schedaDao.getSchedaById(schedaId)
 
-            if (scheda != null) {
-                schedaDao.eliminaScheda(scheda)
-            }
+        if (scheda != null) {
+            schedaDao.eliminaScheda(scheda)
         }
     }
 }

@@ -38,7 +38,7 @@ class AllenamentoActivity : AppCompatActivity() {
     private val listaEserciziMutable = mutableListOf<EsercizioConSerie>()
     private val serieDbMutex = Mutex()
 
-    private var schedaId: String? = null
+    private var schedaId: Int? = null
     private var isModifica = false
     private var schedaAttuale: SchedaAllenamento? = null
     private var countDownTimer: CountDownTimer? = null
@@ -61,7 +61,7 @@ class AllenamentoActivity : AppCompatActivity() {
 
         allenamentoDao = AppDatabase.getDatabase(this).allenamentoDao()
 
-        schedaId = intent.getStringExtra("SCHEDA_ID")
+        schedaId = intent.getIntExtra("SCHEDA_ID", -1).takeIf { it > 0 }
         isModifica = intent.getBooleanExtra("IS_MODIFICA", false)
 
         txtTimer.text = ""
@@ -103,8 +103,7 @@ class AllenamentoActivity : AppCompatActivity() {
         recyclerEsercizi.adapter = adapter
 
         btnSalvaOppureTermina.text =
-            if (isModifica) "Salva Modifiche"
-            else "Termina Allenamento"
+            if (isModifica) "Salva Modifiche" else "Termina Allenamento"
 
         if (schedaId != null) {
             caricaScheda()
@@ -171,7 +170,7 @@ class AllenamentoActivity : AppCompatActivity() {
         val nuovoId = withContext(Dispatchers.IO) {
             allenamentoDao.inserisciAllenamento(
                 Allenamento(
-                    schedaIdOrigine = schedaId?.toIntOrNull(),
+                    schedaIdOrigine = schedaId,
                     nomeScheda = scheda.nomeScheda,
                     dataInizio = tempoInizioMillis,
                     durataSecondi = 0
@@ -346,12 +345,9 @@ class AllenamentoActivity : AppCompatActivity() {
     }
 
     private fun salvaModificheScheda() {
-        val idScheda = schedaId ?: System.currentTimeMillis().toString()
-        val nomeScheda = txtNomeSchedaTitle.text.toString()
-
         val schedaDaSalvare = SchedaAllenamento(
-            id = idScheda,
-            nomeScheda = nomeScheda,
+            id = schedaId,
+            nomeScheda = txtNomeSchedaTitle.text.toString(),
             listaEsercizi = listaEserciziMutable
         )
 
@@ -525,6 +521,7 @@ class AllenamentoActivity : AppCompatActivity() {
                         val nuovoEsercizio = EsercizioConSerie(
                             nomeEsercizio = esercizioSelezionato.nome,
                             tempoRecuperoSecondi = 60,
+
                             listaSerie = mutableListOf(
                                 SerieEsercizio(
                                     numeroSet = 1,
@@ -532,6 +529,7 @@ class AllenamentoActivity : AppCompatActivity() {
                                     reps = 0
                                 )
                             ),
+
                             esercizioId = esercizioSelezionato.id
                         )
 
