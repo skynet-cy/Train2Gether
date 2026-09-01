@@ -57,19 +57,13 @@ object GestoreSchede {
 
         val db = AppDatabase.getDatabase(context)
         val schedaDao = db.schedaDao()
-        val esercizioDao = db.esercizioDao()
-
         val idNumerico = scheda.id.toIntOrNull()
-        val eserciziDb = esercizioDao.getTuttiEsercizi()
 
-        val eserciziPerDb = mutableListOf<NuovoEsercizioScheda>()
+        val eserciziPerDb = scheda.listaEsercizi.map { itemEsercizio ->
 
-        for (itemEsercizio in scheda.listaEsercizi) {
-            val esercizioTrovato = eserciziDb.find {
-                it.nome.equals(itemEsercizio.nomeEsercizio, ignoreCase = true)
+            require(itemEsercizio.esercizioId > 0) {
+                "ID esercizio non valido per ${itemEsercizio.nomeEsercizio}"
             }
-
-            val esercizioIdDb = esercizioTrovato?.id ?: 1
 
             val seriePerDb = itemEsercizio.listaSerie.map { serie ->
                 NuovaSeriePrevista(
@@ -78,12 +72,10 @@ object GestoreSchede {
                 )
             }
 
-            eserciziPerDb.add(
-                NuovoEsercizioScheda(
-                    esercizioId = esercizioIdDb,
-                    riposoSecondi = itemEsercizio.tempoRecuperoSecondi.toInt(),
-                    serie = seriePerDb
-                )
+            NuovoEsercizioScheda(
+                esercizioId = itemEsercizio.esercizioId,
+                riposoSecondi = itemEsercizio.tempoRecuperoSecondi.toInt(),
+                serie = seriePerDb
             )
         }
 
