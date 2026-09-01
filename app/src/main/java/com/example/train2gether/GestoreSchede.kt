@@ -5,7 +5,6 @@ import com.example.train2gether.data.AppDatabase
 import com.example.train2gether.data.NuovaSeriePrevista
 import com.example.train2gether.data.NuovoEsercizioScheda
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 data class SchedaAllenamento(
@@ -16,45 +15,46 @@ data class SchedaAllenamento(
 
 object GestoreSchede {
 
-    suspend fun caricaTutteLeSchede(context: Context): List<SchedaAllenamento> = withContext(Dispatchers.IO) {
-        val db = AppDatabase.getDatabase(context)
-        val schedaDao = db.schedaDao()
+    suspend fun caricaScheda(
+        context: Context,
+        schedaId: String
+    ): SchedaAllenamento? = withContext(Dispatchers.IO) {
 
-        val riepiloghi = schedaDao.getTutteSchede().first()
-        val listaSchede = mutableListOf<SchedaAllenamento>()
+        val idNumerico = schedaId.toIntOrNull() ?: return@withContext null
+        val schedaDao = AppDatabase.getDatabase(context).schedaDao()
 
-        for (riepilogo in riepiloghi) {
-            val schedaCompleta = schedaDao.getSchedaCompleta(riepilogo.id)
-            if (schedaCompleta != null) {
-                val eserciziConvertiti = schedaCompleta.eserciziOrdinati().map { esCompleto ->
-                    EsercizioConSerie(
-                        nomeEsercizio = esCompleto.esercizio.nome,
-                        tempoRecuperoSecondi = esCompleto.esercizioScheda.riposoSecondi.toLong(),
-                        listaSerie = esCompleto.serieOrdinate().map { seriePrevista ->
-                            SerieEsercizio(
-                                numeroSet = seriePrevista.numeroSerie,
-                                kg = seriePrevista.peso ?: 0.0,
-                                reps = seriePrevista.ripetizioni
-                            )
-                        }.toMutableList(),
+        val schedaCompleta =
+            schedaDao.getSchedaCompleta(idNumerico) ?: return@withContext null
 
-                        esercizioId = esCompleto.esercizio.id
+        val eserciziConvertiti = schedaCompleta.eserciziOrdinati().map { esCompleto ->
+            EsercizioConSerie(
+                nomeEsercizio = esCompleto.esercizio.nome,
+                tempoRecuperoSecondi = esCompleto.esercizioScheda.riposoSecondi.toLong(),
+
+                listaSerie = esCompleto.serieOrdinate().map { seriePrevista ->
+                    SerieEsercizio(
+                        numeroSet = seriePrevista.numeroSerie,
+                        kg = seriePrevista.peso ?: 0.0,
+                        reps = seriePrevista.ripetizioni
                     )
-                }
+                }.toMutableList(),
 
-                listaSchede.add(
-                    SchedaAllenamento(
-                        id = schedaCompleta.scheda.id.toString(),
-                        nomeScheda = schedaCompleta.scheda.nome,
-                        listaEsercizi = eserciziConvertiti
-                    )
-                )
-            }
+                esercizioId = esCompleto.esercizio.id
+            )
         }
-        return@withContext listaSchede
+
+        SchedaAllenamento(
+            id = schedaCompleta.scheda.id.toString(),
+            nomeScheda = schedaCompleta.scheda.nome,
+            listaEsercizi = eserciziConvertiti
+        )
     }
 
-    suspend fun salvaScheda(context: Context, scheda: SchedaAllenamento) = withContext(Dispatchers.IO) {
+    suspend fun salvaScheda(
+        context: Context,
+        scheda: SchedaAllenamento
+    ) = withContext(Dispatchers.IO) {
+
         val db = AppDatabase.getDatabase(context)
         val schedaDao = db.schedaDao()
         val esercizioDao = db.esercizioDao()
@@ -65,7 +65,10 @@ object GestoreSchede {
         val eserciziPerDb = mutableListOf<NuovoEsercizioScheda>()
 
         for (itemEsercizio in scheda.listaEsercizi) {
-            val esercizioTrovato = eserciziDb.find { it.nome.equals(itemEsercizio.nomeEsercizio, ignoreCase = true) }
+            val esercizioTrovato = eserciziDb.find {
+                it.nome.equals(itemEsercizio.nomeEsercizio, ignoreCase = true)
+            }
+
             val esercizioIdDb = esercizioTrovato?.id ?: 1
 
             val seriePerDb = itemEsercizio.listaSerie.map { serie ->
@@ -98,11 +101,17 @@ object GestoreSchede {
         }
     }
 
-    suspend fun eliminaScheda(context: Context, schedaId: String) = withContext(Dispatchers.IO) {
+    suspend fun eliminaScheda(
+        context: Context,
+        schedaId: String
+    ) = withContext(Dispatchers.IO) {
+
         val schedaDao = AppDatabase.getDatabase(context).schedaDao()
         val idNumerico = schedaId.toIntOrNull()
+
         if (idNumerico != null) {
             val scheda = schedaDao.getSchedaById(idNumerico)
+
             if (scheda != null) {
                 schedaDao.eliminaScheda(scheda)
             }

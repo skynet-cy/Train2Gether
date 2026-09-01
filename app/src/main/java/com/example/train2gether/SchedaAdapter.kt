@@ -7,12 +7,13 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.train2gether.data.SchedaRiepilogo
 
 class SchedaAdapter(
-    private val listaSchede: MutableList<SchedaAllenamento>,
-    private val onAvviaClick: (SchedaAllenamento) -> Unit,
-    private val onModificaClick: (SchedaAllenamento) -> Unit,
-    private val onEliminaClick: (SchedaAllenamento) -> Unit
+    private val listaSchede: MutableList<SchedaRiepilogo>,
+    private val onAvviaClick: (SchedaRiepilogo) -> Unit,
+    private val onModificaClick: (SchedaRiepilogo) -> Unit,
+    private val onEliminaClick: (SchedaRiepilogo) -> Unit
 ) : RecyclerView.Adapter<SchedaAdapter.SchedaViewHolder>() {
 
     class SchedaViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -26,22 +27,21 @@ class SchedaAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SchedaViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_scheda, parent, false)
+
         return SchedaViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: SchedaViewHolder, position: Int) {
         val scheda = listaSchede[position]
 
-        holder.txtNome.text = scheda.nomeScheda
-        val numEsercizi = scheda.listaEsercizi.size
-        holder.txtInfo.text = if (numEsercizi == 1) "1 Esercizio" else "$numEsercizi Esercizi"
+        holder.txtNome.text = scheda.nome
+        holder.txtInfo.text =
+            if (scheda.numeroEsercizi == 1) "1 Esercizio"
+            else "${scheda.numeroEsercizi} Esercizi"
 
         holder.btnAvvia.setOnClickListener { onAvviaClick(scheda) }
         holder.btnModifica.setOnClickListener { onModificaClick(scheda) }
-
-        holder.btnEliminaScheda.setOnClickListener {
-            onEliminaClick(scheda)
-        }
+        holder.btnEliminaScheda.setOnClickListener { onEliminaClick(scheda) }
     }
 
     override fun getItemCount(): Int = listaSchede.size

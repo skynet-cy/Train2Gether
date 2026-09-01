@@ -43,8 +43,6 @@ class AllenamentoActivity : AppCompatActivity() {
     private var schedaAttuale: SchedaAllenamento? = null
     private var countDownTimer: CountDownTimer? = null
     private var isDataModified = false
-
-    // Allenamento attualmente aperto nel DB
     private var allenamentoId: Int? = null
     private var tempoInizioMillis: Long = 0L
 
@@ -55,26 +53,21 @@ class AllenamentoActivity : AppCompatActivity() {
         supportActionBar?.hide()
         setContentView(R.layout.activity_allenamento)
 
-        // View
         txtNomeSchedaTitle = findViewById(R.id.txtNomeSchedaTitle)
         txtTimer = findViewById(R.id.txtTimer)
         recyclerEsercizi = findViewById(R.id.recyclerEsercizi)
         btnAggiungiEsercizio = findViewById(R.id.btnAggiungiEsercizio)
         btnSalvaOppureTermina = findViewById(R.id.btnSalvaOppureTermina)
 
-        // Database
         allenamentoDao = AppDatabase.getDatabase(this).allenamentoDao()
 
-        // Dati ricevuti
         schedaId = intent.getStringExtra("SCHEDA_ID")
         isModifica = intent.getBooleanExtra("IS_MODIFICA", false)
 
-        // Timer
         txtTimer.text = ""
         txtTimer.visibility = View.GONE
         txtTimer.setOnClickListener { fermaTimerRecupero() }
 
-        // RecyclerView
         recyclerEsercizi.layoutManager = LinearLayoutManager(this)
 
         adapter = EsercizioAdapter(
@@ -110,7 +103,8 @@ class AllenamentoActivity : AppCompatActivity() {
         recyclerEsercizi.adapter = adapter
 
         btnSalvaOppureTermina.text =
-            if (isModifica) "Salva Modifiche" else "Termina Allenamento"
+            if (isModifica) "Salva Modifiche"
+            else "Termina Allenamento"
 
         if (schedaId != null) {
             caricaScheda()
@@ -137,14 +131,14 @@ class AllenamentoActivity : AppCompatActivity() {
         )
     }
 
-    // =========================================================
-    // CARICAMENTO SCHEDA
-    // =========================================================
-
     private fun caricaScheda() {
+        val id = schedaId ?: return
+
         lifecycleScope.launch {
-            val tutteLeSchede = GestoreSchede.caricaTutteLeSchede(this@AllenamentoActivity)
-            schedaAttuale = tutteLeSchede.find { it.id == schedaId }
+            schedaAttuale = GestoreSchede.caricaScheda(
+                this@AllenamentoActivity,
+                id
+            )
 
             val scheda = schedaAttuale
 
@@ -165,16 +159,11 @@ class AllenamentoActivity : AppCompatActivity() {
             listaEserciziMutable.addAll(scheda.listaEsercizi)
             adapter.notifyDataSetChanged()
 
-            // In modalità allenamento creiamo subito Allenamento con durata = 0.
             if (!isModifica && allenamentoId == null) {
                 creaAllenamentoNelDatabase(scheda)
             }
         }
     }
-
-    // =========================================================
-    // CREAZIONE ALLENAMENTO
-    // =========================================================
 
     private suspend fun creaAllenamentoNelDatabase(scheda: SchedaAllenamento) {
         tempoInizioMillis = System.currentTimeMillis()
@@ -192,10 +181,6 @@ class AllenamentoActivity : AppCompatActivity() {
 
         allenamentoId = nuovoId.toInt()
     }
-
-    // =========================================================
-    // CHECK / UNCHECK SERIE
-    // =========================================================
 
     private fun gestisciStatoSerie(
         esercizio: EsercizioConSerie,
@@ -219,8 +204,6 @@ class AllenamentoActivity : AppCompatActivity() {
         lifecycleScope.launch {
             serieDbMutex.withLock {
                 try {
-
-                    // CHECK -> INSERT
                     if (completata) {
                         if (serie.serieEseguitaId != null) return@withLock
 
@@ -240,10 +223,8 @@ class AllenamentoActivity : AppCompatActivity() {
 
                         serie.serieEseguitaId = nuovoId.toInt()
                         serie.completata = true
-                    }
 
-                    // UNCHECK -> DELETE
-                    else {
+                    } else {
                         val idSerie = serie.serieEseguitaId ?: return@withLock
 
                         val serieDaEliminare = SerieEseguita(
@@ -278,10 +259,6 @@ class AllenamentoActivity : AppCompatActivity() {
             }
         }
     }
-
-    // =========================================================
-    // UPDATE SERIE GIÀ SPUNTATA
-    // =========================================================
 
     private fun aggiornaSerieEseguita(
         esercizio: EsercizioConSerie,
@@ -323,10 +300,6 @@ class AllenamentoActivity : AppCompatActivity() {
         }
     }
 
-    // =========================================================
-    // TERMINA ALLENAMENTO
-    // =========================================================
-
     private fun terminaAllenamento() {
         val id = allenamentoId
 
@@ -343,10 +316,6 @@ class AllenamentoActivity : AppCompatActivity() {
             ((System.currentTimeMillis() - tempoInizioMillis) / 1000).toInt()
 
         lifecycleScope.launch {
-            /*
-             * Il mutex assicura che un eventuale INSERT della serie
-             * appena spuntata venga concluso prima del controllo del DAO.
-             */
             val terminato = serieDbMutex.withLock {
                 withContext(Dispatchers.IO) {
                     allenamentoDao.terminaAllenamento(
@@ -376,10 +345,6 @@ class AllenamentoActivity : AppCompatActivity() {
         }
     }
 
-    // =========================================================
-    // MODIFICA SCHEDA
-    // =========================================================
-
     private fun salvaModificheScheda() {
         val idScheda = schedaId ?: System.currentTimeMillis().toString()
         val nomeScheda = txtNomeSchedaTitle.text.toString()
@@ -407,10 +372,6 @@ class AllenamentoActivity : AppCompatActivity() {
             finish()
         }
     }
-
-    // =========================================================
-    // USCITA
-    // =========================================================
 
     private fun gestisciUscita() {
         if (isModifica) {
@@ -460,19 +421,11 @@ class AllenamentoActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            /*
-             * Aspettiamo eventuali INSERT/UPDATE/DELETE delle serie
-             * prima di cancellare l'allenamento.
-             */
             serieDbMutex.withLock {
                 withContext(Dispatchers.IO) {
                     val allenamento = allenamentoDao.getAllenamentoById(id)
 
                     if (allenamento != null) {
-                        /*
-                         * SerieEseguita ha FK CASCADE verso Allenamento:
-                         * cancellando Allenamento spariscono anche le sue serie.
-                         */
                         allenamentoDao.eliminaAllenamento(allenamento)
                     }
                 }
@@ -489,10 +442,6 @@ class AllenamentoActivity : AppCompatActivity() {
             finish()
         }
     }
-
-    // =========================================================
-    // TIMER RECUPERO
-    // =========================================================
 
     private fun avviaTimerRecupero(millis: Long) {
         countDownTimer?.cancel()
@@ -538,10 +487,6 @@ class AllenamentoActivity : AppCompatActivity() {
         }, 1000)
     }
 
-    // =========================================================
-    // AGGIUNTA ESERCIZIO
-    // =========================================================
-
     private fun mostraPopupNuovoEsercizio() {
         val dialogView = layoutInflater.inflate(
             R.layout.dialog_selezione_esercizio,
@@ -569,38 +514,36 @@ class AllenamentoActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             val db = AppDatabase.getDatabase(this@AllenamentoActivity)
+
             listaCompleta = db.esercizioDao().getTuttiEsercizi()
             listaFiltrata.addAll(listaCompleta)
 
             withContext(Dispatchers.Main) {
-                dialogAdapter = CatalogoDialogAdapter(listaFiltrata) { esercizioSelezionato ->
+                dialogAdapter =
+                    CatalogoDialogAdapter(listaFiltrata) { esercizioSelezionato ->
 
-                    /*
-                     * IMPORTANTE:
-                     * conserviamo anche l'ID Room dell'esercizio.
-                     */
-                    val nuovoEsercizio = EsercizioConSerie(
-                        nomeEsercizio = esercizioSelezionato.nome,
-                        tempoRecuperoSecondi = 60,
-                        listaSerie = mutableListOf(
-                            SerieEsercizio(
-                                numeroSet = 1,
-                                kg = 0.0,
-                                reps = 0
-                            )
-                        ),
-                        esercizioId = esercizioSelezionato.id
-                    )
+                        val nuovoEsercizio = EsercizioConSerie(
+                            nomeEsercizio = esercizioSelezionato.nome,
+                            tempoRecuperoSecondi = 60,
+                            listaSerie = mutableListOf(
+                                SerieEsercizio(
+                                    numeroSet = 1,
+                                    kg = 0.0,
+                                    reps = 0
+                                )
+                            ),
+                            esercizioId = esercizioSelezionato.id
+                        )
 
-                    listaEserciziMutable.add(nuovoEsercizio)
-                    adapter.notifyItemInserted(listaEserciziMutable.size - 1)
+                        listaEserciziMutable.add(nuovoEsercizio)
+                        adapter.notifyItemInserted(listaEserciziMutable.size - 1)
 
-                    if (isModifica) {
-                        isDataModified = true
+                        if (isModifica) {
+                            isDataModified = true
+                        }
+
+                        dialog.dismiss()
                     }
-
-                    dialog.dismiss()
-                }
 
                 recyclerCatalogo.layoutManager =
                     LinearLayoutManager(this@AllenamentoActivity)

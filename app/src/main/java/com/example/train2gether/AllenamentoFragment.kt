@@ -1,5 +1,4 @@
 package com.example.train2gether
-
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,21 +9,29 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.train2gether.data.AppDatabase
+import com.example.train2gether.data.SchedaRiepilogo
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class AllenamentoFragment : Fragment() {
 
     private lateinit var recyclerSchede: RecyclerView
-    private val listaSchedeMutable = mutableListOf<SchedaAllenamento>()
     private lateinit var adapter: SchedaAdapter
 
+    private val listaSchedeMutable = mutableListOf<SchedaRiepilogo>()
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
+
         val view = inflater.inflate(R.layout.fragment_allenamento, container, false)
 
         val btnNuovaScheda: Button = view.findViewById(R.id.btnNuovaScheda)
@@ -34,8 +41,9 @@ class AllenamentoFragment : Fragment() {
 
         adapter = SchedaAdapter(
             listaSchede = listaSchedeMutable,
+
             onAvviaClick = { scheda ->
-                if (scheda.listaEsercizi.isEmpty()) {
+                if (scheda.numeroEsercizi == 0) {
                     Toast.makeText(
                         requireContext(),
                         "Impossibile avviare: aggiungi almeno un esercizio alla scheda!",
@@ -43,26 +51,37 @@ class AllenamentoFragment : Fragment() {
                     ).show()
                 } else {
                     val intent = Intent(requireContext(), AllenamentoActivity::class.java)
-                    intent.putExtra("SCHEDA_ID", scheda.id)
+                    intent.putExtra("SCHEDA_ID", scheda.id.toString())
                     intent.putExtra("IS_MODIFICA", false)
                     startActivity(intent)
                 }
             },
+
             onModificaClick = { scheda ->
                 val intent = Intent(requireContext(), AllenamentoActivity::class.java)
-                intent.putExtra("SCHEDA_ID", scheda.id)
+                intent.putExtra("SCHEDA_ID", scheda.id.toString())
                 intent.putExtra("IS_MODIFICA", true)
                 startActivity(intent)
             },
+
             onEliminaClick = { scheda ->
                 AlertDialog.Builder(requireContext())
                     .setTitle("Elimina Scheda")
-                    .setMessage("Sei sicuro di voler eliminare definitivamente la scheda \"${scheda.nomeScheda}\"?")
+                    .setMessage(
+                        "Sei sicuro di voler eliminare definitivamente la scheda \"${scheda.nome}\"?"
+                    )
                     .setPositiveButton("Elimina") { _, _ ->
                         viewLifecycleOwner.lifecycleScope.launch {
-                            GestoreSchede.eliminaScheda(requireContext(), scheda.id)
-                            caricaSchedeSalvate()
-                            Toast.makeText(requireContext(), "Scheda eliminata", Toast.LENGTH_SHORT).show()
+                            GestoreSchede.eliminaScheda(
+                                requireContext(),
+                                scheda.id.toString()
+                            )
+
+                            Toast.makeText(
+                                requireContext(),
+                                "Scheda eliminata",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                     .setNegativeButton("Annulla", null)
@@ -79,17 +98,22 @@ class AllenamentoFragment : Fragment() {
         return view
     }
 
-    override fun onResume() {
-        super.onResume()
-        caricaSchedeSalvate()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        osservaSchede()
     }
 
-    private fun caricaSchedeSalvate() {
+    private fun osservaSchede() {
+        val schedaDao = AppDatabase.getDatabase(requireContext()).schedaDao()
+
         viewLifecycleOwner.lifecycleScope.launch {
-            val schedeCaricate = GestoreSchede.caricaTutteLeSchede(requireContext())
-            listaSchedeMutable.clear()
-            listaSchedeMutable.addAll(schedeCaricate)
-            adapter.notifyDataSetChanged()
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                schedaDao.getTutteSchede().collectLatest { schede ->
+                    listaSchedeMutable.clear()
+                    listaSchedeMutable.addAll(schede)
+                    adapter.notifyDataSetChanged()
+                }
+            }
         }
     }
 
@@ -105,18 +129,24 @@ class AllenamentoFragment : Fragment() {
                 val nomeScheda = inputNomeScheda.text.toString().trim()
 
                 if (nomeScheda.isNotEmpty()) {
-                    val nuevaScheda = SchedaAllenamento(
+                    val nuovaScheda = SchedaAllenamento(
                         id = System.currentTimeMillis().toString(),
                         nomeScheda = nomeScheda,
                         listaEsercizi = emptyList()
                     )
 
                     viewLifecycleOwner.lifecycleScope.launch {
-                        GestoreSchede.salvaScheda(requireContext(), nuevaScheda)
-                        caricaSchedeSalvate()
+                        GestoreSchede.salvaScheda(
+                            requireContext(),
+                            nuovaScheda
+                        )
                     }
                 } else {
-                    Toast.makeText(requireContext(), "Inserisci un nome valido!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Inserisci un nome valido!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
             .setNegativeButton("Annulla", null)
