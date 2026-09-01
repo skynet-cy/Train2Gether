@@ -23,58 +23,9 @@
             android:id="@+id/chipGroupGruppi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:singleSelection="true">
+            app:selectionRequired="true"
+            app:singleSelection="true" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipTutti"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="Tutti" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipPetto"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Petto" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipBicipiti"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Bicipiti" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipTricipiti"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tricipiti" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipSpalle"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Spalle" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipDorsali"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Dorsali" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipGambe"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Quadricipiti" />
-        </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import com.google.android.material.chip.Chip
 
 class AllenamentoActivity : AppCompatActivity() {
 
@@ -502,23 +503,30 @@ class AllenamentoActivity : AppCompatActivity() {
     }
 
     private fun mostraPopupNuovoEsercizio() {
-        val dialogView = layoutInflater.inflate(
-            R.layout.dialog_selezione_esercizio,
-            null
-        )
-
-        val searchView =
-            dialogView.findViewById<SearchView>(R.id.searchEsercizio)
-
-        val chipGroup =
-            dialogView.findViewById<ChipGroup>(R.id.chipGroupGruppi)
-
-        val recyclerCatalogo =
-            dialogView.findViewById<RecyclerView>(R.id.recyclerCatalogo)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_selezione_esercizio, null)
+        val searchView = dialogView.findViewById<SearchView>(R.id.searchEsercizio)
+        val chipGroup = dialogView.findViewById<ChipGroup>(R.id.chipGroupGruppi)
+        val recyclerCatalogo = dialogView.findViewById<RecyclerView>(R.id.recyclerCatalogo)
 
         var listaCompleta = listOf<Esercizio>()
         val listaFiltrata = mutableListOf<Esercizio>()
         var dialogAdapter: CatalogoDialogAdapter? = null
+        var gruppoSelezionato = "Tutti"
+        var testoRicerca = ""
+
+        fun applicaFiltri() {
+            listaFiltrata.clear()
+            listaFiltrata.addAll(
+                listaCompleta.filter { esercizio ->
+                    val gruppoOk = gruppoSelezionato == "Tutti" ||
+                            esercizio.gruppoMuscolare.equals(gruppoSelezionato, ignoreCase = true)
+
+                    val ricercaOk = esercizio.nome.contains(testoRicerca, ignoreCase = true)
+                    gruppoOk && ricercaOk
+                }
+            )
+            dialogAdapter?.notifyDataSetChanged()
+        }
 
         val dialog = AlertDialog.Builder(this)
             .setTitle("Seleziona Esercizio")
@@ -527,99 +535,65 @@ class AllenamentoActivity : AppCompatActivity() {
             .create()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val db = AppDatabase.getDatabase(this@AllenamentoActivity)
-
-            listaCompleta = db.esercizioDao().getTuttiEsercizi()
-            listaFiltrata.addAll(listaCompleta)
+            listaCompleta = AppDatabase.getDatabase(this@AllenamentoActivity)
+                .esercizioDao()
+                .getTuttiEsercizi()
 
             withContext(Dispatchers.Main) {
-                dialogAdapter =
-                    CatalogoDialogAdapter(listaFiltrata) { esercizioSelezionato ->
+                val gruppi = listaCompleta
+                    .map { it.gruppoMuscolare }
+                    .distinct()
+                    .sorted()
 
-                        val nuovoEsercizio = EsercizioConSerie(
-                            nomeEsercizio = esercizioSelezionato.nome,
-                            tempoRecuperoSecondi = 60,
-
-                            listaSerie = mutableListOf(
-                                SerieEsercizio(
-                                    numeroSet = 1,
-                                    kg = 0.0,
-                                    reps = 0
-                                )
-                            ),
-
-                            esercizioId = esercizioSelezionato.id
-                        )
-
-                        listaEserciziMutable.add(nuovoEsercizio)
-                        adapter.notifyItemInserted(listaEserciziMutable.size - 1)
-
-                        if (isModifica) {
-                            isDataModified = true
+                (listOf("Tutti") + gruppi).forEachIndexed { index, gruppo ->
+                    chipGroup.addView(
+                        Chip(this@AllenamentoActivity).apply {
+                            id = View.generateViewId()
+                            text = gruppo
+                            tag = gruppo
+                            isCheckable = true
+                            isChecked = index == 0
                         }
+                    )
+                }
 
-                        dialog.dismiss()
-                    }
+                dialogAdapter = CatalogoDialogAdapter(listaFiltrata) { esercizioSelezionato ->
+                    val nuovoEsercizio = EsercizioConSerie(
+                        nomeEsercizio = esercizioSelezionato.nome,
+                        tempoRecuperoSecondi = 60,
+                        listaSerie = mutableListOf(
+                            SerieEsercizio(numeroSet = 1, kg = 0.0, reps = 0)
+                        ),
+                        esercizioId = esercizioSelezionato.id
+                    )
 
-                recyclerCatalogo.layoutManager =
-                    LinearLayoutManager(this@AllenamentoActivity)
+                    listaEserciziMutable.add(nuovoEsercizio)
+                    adapter.notifyItemInserted(listaEserciziMutable.size - 1)
 
+                    if (isModifica) isDataModified = true
+                    dialog.dismiss()
+                }
+
+                recyclerCatalogo.layoutManager = LinearLayoutManager(this@AllenamentoActivity)
                 recyclerCatalogo.adapter = dialogAdapter
+                applicaFiltri()
             }
         }
 
-        searchView.setOnQueryTextListener(
-            object : SearchView.OnQueryTextListener {
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean = false
 
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    return false
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    val query = newText.orEmpty().lowercase()
-
-                    listaFiltrata.clear()
-                    listaFiltrata.addAll(
-                        listaCompleta.filter {
-                            it.nome.lowercase().contains(query)
-                        }
-                    )
-
-                    dialogAdapter?.notifyDataSetChanged()
-                    return true
-                }
+            override fun onQueryTextChange(newText: String?): Boolean {
+                testoRicerca = newText.orEmpty()
+                applicaFiltri()
+                return true
             }
-        )
+        })
 
-        chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
-            val chipId = checkedIds.firstOrNull()
-
-            val gruppoSelezionato = when (chipId) {
-                R.id.chipPetto -> "Petto"
-                R.id.chipBicipiti -> "Bicipiti"
-                R.id.chipTricipiti -> "Tricipiti"
-                R.id.chipSpalle -> "Spalle"
-                R.id.chipDorsali -> "Dorsali"
-                R.id.chipGambe -> "Quadricipiti"
-                else -> "Tutti"
-            }
-
-            listaFiltrata.clear()
-
-            if (gruppoSelezionato == "Tutti") {
-                listaFiltrata.addAll(listaCompleta)
-            } else {
-                listaFiltrata.addAll(
-                    listaCompleta.filter {
-                        it.gruppoMuscolare.equals(
-                            gruppoSelezionato,
-                            ignoreCase = true
-                        )
-                    }
-                )
-            }
-
-            dialogAdapter?.notifyDataSetChanged()
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            val chipId = checkedIds.firstOrNull() ?: return@setOnCheckedStateChangeListener
+            gruppoSelezionato = group.findViewById<Chip>(chipId).tag as String
+            applicaFiltri()
         }
 
         dialog.show()
