@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-
+//rappresenta un esercizio disponibile nell'applicazione
 @Entity(
     tableName = "esercizi"
 )
@@ -22,7 +22,7 @@ data class Esercizio(
 )
 
 
-
+//rappresenta una scheda di allenamento creata dall'utente.
 @Entity(
     tableName = "schede"
 )
@@ -34,7 +34,7 @@ data class Scheda(
     val nome: String
 )
 
-
+//rappresenta un esercizio associandolo alla scheda definendone ordine e tempo di recupero.
 @Entity(
     tableName = "esercizi_scheda",
 
@@ -76,7 +76,7 @@ data class EsercizioScheda(
     val ordine: Int
 )
 
-
+//rappresenta una serie di un esercizio presente nella scheda con ripetizioni e peso previsti poiche modificabili in allenamento
 @Entity(
     tableName = "serie_previste",
 
@@ -109,7 +109,7 @@ data class SeriePrevista(
     val ripetizioni: Int
 )
 
-
+//rappresenta un allenamento avviato derivante da una scheda.
 @Entity(
     tableName = "allenamenti",
 
@@ -134,6 +134,7 @@ data class Allenamento(
     @ColumnInfo(name = "scheda_id_origine")
     val schedaIdOrigine: Int? = null,
 
+    //mantiene il nome scheda in caso di cancellazione della scheda stessa.
     @ColumnInfo(name = "nome_scheda")
     val nomeScheda: String? = null,
 
@@ -144,7 +145,7 @@ data class Allenamento(
     val durataSecondi: Int
 )
 
-
+//rappresenta una serie con peso e ripetizioni effettivamente eseguite durante l'allenamento.
 @Entity(
     tableName = "serie_eseguite",
 

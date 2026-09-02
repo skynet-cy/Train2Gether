@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import android.content.Context
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteDatabase
-
+//database room principale dell'applicazione con entita gestite
 @Database(
     entities = [
         Esercizio::class,
@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     exportSchema = false
 )
 abstract class AppDatabase: RoomDatabase() {
-
+    //DAO utilizzati per acedere ai dati dell'applicazione
     abstract fun esercizioDao(): EsercizioDao
 
     abstract fun schedaDao(): SchedaDao
@@ -31,6 +31,7 @@ abstract class AppDatabase: RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        //popola il database con gli esercizi iniziali alla prima creazione.
         private val DATABASE_CALLBACK = object : RoomDatabase.Callback() {
 
             override fun onCreate(db: SupportSQLiteDatabase) {
@@ -48,7 +49,7 @@ abstract class AppDatabase: RoomDatabase() {
                 }
             }
         }
-
+        //Gestisce l'istanza singleton del database, creandola quando necessario.
         fun getDatabase(context: Context): AppDatabase {
 
             return INSTANCE ?: synchronized(this) {

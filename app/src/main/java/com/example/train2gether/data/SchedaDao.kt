@@ -8,7 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
-
+//gestisce accesso e operazioni sulle schede nel db
 @Dao
 abstract class SchedaDao {
 
@@ -27,14 +27,14 @@ abstract class SchedaDao {
     )
 
 
-    //Elimina una Scheda, di conseguenza tutti gli esercizi e serie
+    //Elimina una Scheda, di conseguenza tutti gli esercizi e serie previste
     @Delete
     abstract suspend fun eliminaScheda(
         scheda: Scheda
     )
 
 
-    //Restituisce tutte le schede insieme al numero di esercizi contenuti.
+    //Restituisce tutte le schede insieme al numero di esercizi contenuti per ogni scheda.
     @Query(
         """
         SELECT
@@ -84,13 +84,13 @@ abstract class SchedaDao {
         esercizioScheda: EsercizioScheda
     ): Long
 
-
+    //Aggiorna un esercizio già presente nella scheda.
     @Update
     abstract suspend fun aggiornaEsercizioScheda(
         esercizioScheda: EsercizioScheda
     )
 
-
+    //Elimina un esercizio dalla scheda.
     @Delete
     abstract suspend fun eliminaEsercizioScheda(
         esercizioScheda: EsercizioScheda
@@ -114,13 +114,13 @@ abstract class SchedaDao {
         serie: List<SeriePrevista>
     )
 
-
+    //Aggiorna una serie prevista.
     @Update
     abstract suspend fun aggiornaSeriePrevista(
         serie: SeriePrevista
     )
 
-
+    //Elimina una serie prevista.
     @Delete
     abstract suspend fun eliminaSeriePrevista(
         serie: SeriePrevista
@@ -187,7 +187,7 @@ abstract class SchedaDao {
                     SeriePrevista(
                         esercizioSchedaId = esercizioSchedaId,
 
-                        // Le serie partono da 1.
+                        // la numerazione delle serie parte da 1.
                         numeroSerie = indiceSerie + 1,
 
                         peso = nuovaSerie.peso,

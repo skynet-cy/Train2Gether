@@ -8,7 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
-
+//gestisce l'accesso al db per allenamenti e serie eseguite
 @Dao
 abstract class AllenamentoDao {
 
@@ -27,7 +27,7 @@ abstract class AllenamentoDao {
     )
 
 
-    //Elimina completamente un allenamento, con le serie eseguite
+    //Elimina completamente un allenamento, con le serie eseguite associate (CASCADE)
     @Delete
     abstract suspend fun eliminaAllenamento(
         allenamento: Allenamento
@@ -48,7 +48,7 @@ abstract class AllenamentoDao {
     ): Allenamento?
 
 
-    //Cerca l'ultimo allenamento ancora in corso.
+    //Recupera l'ultimo allenamento ancora in corso.
     @Query(
         """
         SELECT *
@@ -61,7 +61,7 @@ abstract class AllenamentoDao {
     abstract suspend fun getAllenamentoInCorso(): Allenamento?
 
 
-    //Aggiorna solamente la durata finale, Restituisce il numero di righe modificate.
+    //Aggiorna la durata finale, Restituisce il numero di righe modificate.
     @Query(
         """
         UPDATE allenamenti
@@ -74,7 +74,7 @@ abstract class AllenamentoDao {
         durataSecondi: Int
     ): Int
 
-    //Inserisce una serie nel momento in cui
+    //Inserisce una serie eseguita.
     @Insert
     abstract suspend fun inserisciSerieEseguita(
         serie: SerieEseguita
@@ -95,7 +95,7 @@ abstract class AllenamentoDao {
     )
 
 
-    //Recupera tutte le serie eseguite, appartenenti a un allenamento.
+    //Recupera tutte le serie eseguite, appartenenti a un allenamento, ordinate per esercizio e numero di serie.
     @Query(
         """
         SELECT *
@@ -109,7 +109,7 @@ abstract class AllenamentoDao {
     ): List<SerieEseguita>
 
 
-    //Conta quante serie completate durante l'allenamento.
+    //Conta le serie completate durante l'allenamento.
     @Query(
         """
         SELECT COUNT(*)
@@ -160,24 +160,19 @@ abstract class AllenamentoDao {
     abstract fun getStoricoAllenamenti(): Flow<List<AllenamentoRiepilogo>>
 
 
-    //Prova a terminare un allenamento.
-    //true se conclusione consentita.
-    //false se non consentita
+    //termina allenamento se durata e numero serie sono validi (>0)
     @Transaction
     open suspend fun terminaAllenamento(
         allenamentoId: Int,
         durataSecondi: Int
     ): Boolean {
 
-        // Una durata non valida non può concludere
         if (durataSecondi <= 0) {
             return false
         }
 
         val numeroSerie = contaSerieEseguite(allenamentoId)
 
-
-        // allenamento non terminabile con 0 serie
         if (numeroSerie == 0) {
             return false
         }
