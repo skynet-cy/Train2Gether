@@ -16,8 +16,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// Activity che mostra il dettaglio completo di un allenamento salvato nello storico.
 class DettaglioStoricoActivity : AppCompatActivity() {
 
+    // Dichiarazione degli elementi dell'UI
     private lateinit var txtTitolo: TextView
     private lateinit var txtData: TextView
     private lateinit var recyclerEsercizi: RecyclerView
@@ -28,17 +30,20 @@ class DettaglioStoricoActivity : AppCompatActivity() {
         supportActionBar?.hide()
         setContentView(R.layout.activity_dettaglio_storico)
 
+        // Collegamento agli ID dell'XML
         txtTitolo = findViewById(R.id.txtTitoloDettaglio)
         txtData = findViewById(R.id.txtSottotitoloData)
         recyclerEsercizi = findViewById(R.id.recyclerDettaglioEsercizi)
         recyclerEsercizi.layoutManager = LinearLayoutManager(this)
 
+        // Recupera l'ID dell'allenamento passato dall'adapter dello storico tramite Intent
         val allenamentoId = intent.getIntExtra("ALLENAMENTO_ID", -1)
         if (allenamentoId != -1) {
             caricaDettagli(allenamentoId)
         }
     }
 
+    // Carica dal database l'allenamento completo e popola i dati a schermo
     private fun caricaDettagli(id: Int) {
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(this@DettaglioStoricoActivity)
@@ -48,13 +53,17 @@ class DettaglioStoricoActivity : AppCompatActivity() {
                 val allenamento = allenamentoCompleto.allenamento
                 txtTitolo.text = allenamento.nomeScheda ?: "Allenamento Libero"
 
+                // Converte il timestamp in una stringa di data e ora leggibile
                 val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
                 val dataStr = sdf.format(Date(allenamento.dataInizio))
+
+                // Converte la durata totale nel formato mm:ss
                 val min = allenamento.durataSecondi / 60
                 val sec = allenamento.durataSecondi % 60
                 val durataFormattata = String.format("%02d:%02d", min, sec)
                 txtData.text = "$dataStr • Durata: $durataFormattata"
 
+                // Raggruppa le serie eseguite per esercizio e imposta l'adapter della lista
                 val eserciziRaggruppati = allenamentoCompleto.seriePerEsercizio().values.toList()
                 recyclerEsercizi.adapter = EsercizioDettaglioStoricoAdapter(eserciziRaggruppati)
             }
@@ -62,6 +71,7 @@ class DettaglioStoricoActivity : AppCompatActivity() {
     }
 }
 
+// Adapter per gestire la lista degli esercizi nello storico
 class EsercizioDettaglioStoricoAdapter(
     private val listaEsercizi: List<List<SerieEseguita>>
 ) : RecyclerView.Adapter<EsercizioDettaglioStoricoAdapter.ViewHolder>() {
@@ -82,6 +92,7 @@ class EsercizioDettaglioStoricoAdapter(
         val primoElemento = serieList.firstOrNull()
         holder.txtNomeEsercizio.text = primoElemento?.nomeEsercizio ?: "Esercizio"
 
+        // Configura la RecyclerView per mostrare le serie eseguite per ciascun esercizio
         holder.recyclerSerieEseguiteDettaglio.layoutManager = LinearLayoutManager(holder.itemView.context)
         holder.recyclerSerieEseguiteDettaglio.adapter = SerieEseguiteAdapter(serieList)
     }
@@ -89,6 +100,7 @@ class EsercizioDettaglioStoricoAdapter(
     override fun getItemCount(): Int = listaEsercizi.size
 }
 
+// Adapter interno per mostrare i dettagli di ogni serie
 class SerieEseguiteAdapter(
     private val listaSerie: List<SerieEseguita>
 ) : RecyclerView.Adapter<SerieEseguiteAdapter.SerieViewHolder>() {

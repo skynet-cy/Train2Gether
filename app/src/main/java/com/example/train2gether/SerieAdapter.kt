@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
+// Adapter per gestire la lista delle serie associate a un esercizio
 class SerieAdapter(
 
     private val listaSerie: MutableList<SerieEsercizio>,
@@ -31,6 +32,7 @@ class SerieAdapter(
 
 ) : RecyclerView.Adapter<SerieAdapter.SerieViewHolder>() {
 
+    // ViewHolder che mantiene i riferimenti agli elementi grafici della serie
     class SerieViewHolder(view: View) :
         RecyclerView.ViewHolder(view) {
 
@@ -51,6 +53,7 @@ class SerieAdapter(
         val btnElimina: ImageButton =
             view.findViewById(R.id.btnEliminaSerie)
 
+        // Riferimenti ai TextWatcher per prevenire bug di scrittura incontrollata durante il riciclo delle viste
         var kgWatcher: TextWatcher? = null
         var repsWatcher: TextWatcher? = null
     }
@@ -59,7 +62,7 @@ class SerieAdapter(
         parent: ViewGroup,
         viewType: Int
     ): SerieViewHolder {
-
+        // Gonfia il layout dell'XML che rappresenta la singola riga della serie
         val view = LayoutInflater
             .from(parent.context)
             .inflate(
@@ -78,11 +81,13 @@ class SerieAdapter(
 
         val data = listaSerie[position]
 
+        // Imposta il numero progressivo del set
         data.numeroSet = position + 1
 
         holder.txtNumero.text =
             data.numeroSet.toString()
 
+        // Rimuove i vecchi TextWatcher prima di impostare il testo per evitare loop di eventi dovuti al riciclo delle viste
         holder.kgWatcher?.let {
             holder.editKg.removeTextChangedListener(it)
         }
@@ -91,6 +96,7 @@ class SerieAdapter(
             holder.editReps.removeTextChangedListener(it)
         }
 
+        // Imposta i valori di peso e ripetizioni nei campi di input
         holder.editKg.setText(
             if (data.kg > 0)
                 data.kg.toString()
@@ -105,6 +111,7 @@ class SerieAdapter(
                 ""
         )
 
+        // Mostra o nasconde la checkbox in base alla modalità
         if (isModifica) {
 
             holder.chkCompleto.visibility =
@@ -116,16 +123,19 @@ class SerieAdapter(
                 View.VISIBLE
         }
 
+        // Resetta temporaneamente il listener della checkbox per evitare trigger indesiderati durante il binding
         holder.chkCompleto.setOnCheckedChangeListener(null)
 
         holder.chkCompleto.isChecked =
             data.completata
 
+        // Aggiorna il colore della riga in base allo stato
         aggiornaColoreSerie(
             holder,
             data.completata
         )
 
+        // Imposta il listener per gestire il cambio di stato della checkbox
         holder.chkCompleto
             .setOnCheckedChangeListener { _, checked ->
 
@@ -142,6 +152,7 @@ class SerieAdapter(
                 )
             }
 
+        // Crea e assegna il TextWatcher per monitorare le modifiche in tempo reale sul peso
         holder.kgWatcher =
             object : TextWatcher {
 
@@ -173,6 +184,7 @@ class SerieAdapter(
 
                     onDatoModificato()
 
+                    // Se la serie è già completata e salvata nel DB, invia un aggiornamento immediato
                     if (
                         data.completata &&
                         data.serieEseguitaId != null
@@ -186,6 +198,7 @@ class SerieAdapter(
             holder.kgWatcher
         )
 
+        // Crea e assegna il TextWatcher per monitorare le modifiche sulle ripetizioni
         holder.repsWatcher =
             object : TextWatcher {
 
@@ -217,6 +230,7 @@ class SerieAdapter(
 
                     onDatoModificato()
 
+                    // Aggiorna i dati nel DB in tempo reale se la serie è attiva e completata
                     if (
                         data.completata &&
                         data.serieEseguitaId != null
@@ -230,7 +244,7 @@ class SerieAdapter(
             holder.repsWatcher
         )
 
-
+        // Gestisce il pulsante di eliminazione in modalità modifica
         if (isModifica) {
             holder.btnElimina.visibility = View.VISIBLE
 
@@ -247,6 +261,7 @@ class SerieAdapter(
         }
     }
 
+    // Cambia il colore della riga della serie
     private fun aggiornaColoreSerie(
         holder: SerieViewHolder,
         completata: Boolean

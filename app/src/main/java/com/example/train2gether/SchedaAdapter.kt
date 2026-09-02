@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.train2gether.data.SchedaRiepilogo
 
+// Adapter per gestire la visualizzazione delle schede di allenamento all'interno del fragment
 class SchedaAdapter(
     private val listaSchede: MutableList<SchedaRiepilogo>,
     private val onAvviaClick: (SchedaRiepilogo) -> Unit,
@@ -16,6 +17,7 @@ class SchedaAdapter(
     private val onEliminaClick: (SchedaRiepilogo) -> Unit
 ) : RecyclerView.Adapter<SchedaAdapter.SchedaViewHolder>() {
 
+    // ViewHolder che contiene i riferimenti ai componenti grafici del singolo elemento della scheda
     class SchedaViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val txtNome: TextView = view.findViewById(R.id.txtNomeScheda)
         val txtInfo: TextView = view.findViewById(R.id.txtInfoEsercizi)
@@ -25,6 +27,7 @@ class SchedaAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SchedaViewHolder {
+        // Gonfia il layout del file XML
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_scheda, parent, false)
 
@@ -34,11 +37,13 @@ class SchedaAdapter(
     override fun onBindViewHolder(holder: SchedaViewHolder, position: Int) {
         val scheda = listaSchede[position]
 
+        // Imposta il nome della scheda e formatta il testo degli esercizi
         holder.txtNome.text = scheda.nome
         holder.txtInfo.text =
             if (scheda.numeroEsercizi == 1) "1 Esercizio"
             else "${scheda.numeroEsercizi} Esercizi"
 
+        // Associa le rispettive funzioni di callback ai pulsanti della scheda
         holder.btnAvvia.setOnClickListener { onAvviaClick(scheda) }
         holder.btnModifica.setOnClickListener { onModificaClick(scheda) }
         holder.btnEliminaScheda.setOnClickListener { onEliminaClick(scheda) }

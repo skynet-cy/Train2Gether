@@ -1,5 +1,6 @@
 package com.example.train2gether
 
+// Data Class che rappresentano le strutture dati in memoria per le serie e gli esercizi
 data class SerieEsercizio(
     var numeroSet: Int,
     var kg: Double,

@@ -20,11 +20,14 @@ import com.example.train2gether.data.SchedaRiepilogo
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+// Fragment che rappresenta la schermata "Allenamento"
 class AllenamentoFragment : Fragment() {
 
+    // Componenti grafiche dell'adapter
     private lateinit var recyclerSchede: RecyclerView
     private lateinit var adapter: SchedaAdapter
 
+    // Lista mutable che contiene i riepiloghi delle schede visualizzate
     private val listaSchedeMutable = mutableListOf<SchedaRiepilogo>()
 
     override fun onCreateView(
@@ -33,16 +36,20 @@ class AllenamentoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
+        // Gonfia il layout del file XML
         val view = inflater.inflate(R.layout.fragment_allenamento, container, false)
 
         val btnNuovaScheda: Button = view.findViewById(R.id.btnNuovaScheda)
         recyclerSchede = view.findViewById(R.id.recyclerViewMainSchede)
 
+        // Configura il layout manager della RecyclerView in formato verticale
         recyclerSchede.layoutManager = LinearLayoutManager(requireContext())
 
+        // Inizializzazione dell'adapter e configurazione delle callback per le azioni sulle schede
         adapter = SchedaAdapter(
             listaSchede = listaSchedeMutable,
 
+            // Callback eseguita quando si preme "Avvia"
             onAvviaClick = { scheda ->
                 if (scheda.numeroEsercizi == 0) {
                     Toast.makeText(
@@ -51,6 +58,7 @@ class AllenamentoFragment : Fragment() {
                         Toast.LENGTH_LONG
                     ).show()
                 } else {
+                    // Avvia l'activity di allenamento
                     val intent = Intent(requireContext(), AllenamentoActivity::class.java)
                     intent.putExtra("SCHEDA_ID", scheda.id)
                     intent.putExtra("IS_MODIFICA", false)
@@ -58,13 +66,16 @@ class AllenamentoFragment : Fragment() {
                 }
             },
 
+            // Callback eseguita quando si preme "Modifica"
             onModificaClick = { scheda ->
+                // Avvia l'activity di allenamento in modifica
                 val intent = Intent(requireContext(), AllenamentoActivity::class.java)
                 intent.putExtra("SCHEDA_ID", scheda.id)
                 intent.putExtra("IS_MODIFICA", true)
                 startActivity(intent)
             },
 
+            // Callback eseguita quando si preme "Elimina"
             onEliminaClick = { scheda ->
                 AlertDialog.Builder(requireContext())
                     .setTitle("Elimina Scheda")
@@ -73,6 +84,7 @@ class AllenamentoFragment : Fragment() {
                     )
                     .setPositiveButton("Elimina") { _, _ ->
                         viewLifecycleOwner.lifecycleScope.launch {
+                            // Esegue l'eliminazione dal DB
                             GestoreSchede.eliminaScheda(
                                 requireContext(),
                                 scheda.id
@@ -92,6 +104,7 @@ class AllenamentoFragment : Fragment() {
 
         recyclerSchede.adapter = adapter
 
+        // Button per aprire il popup di inserimento della scheda
         btnNuovaScheda.setOnClickListener {
             mostraPopupNuovaScheda()
         }
@@ -104,10 +117,12 @@ class AllenamentoFragment : Fragment() {
         osservaSchede()
     }
 
+    // Osserva i cambiamenti della tabella della tabella nel DB
     private fun osservaSchede() {
         val schedaDao = AppDatabase.getDatabase(requireContext()).schedaDao()
 
         viewLifecycleOwner.lifecycleScope.launch {
+            // Garantisce che il flusso venga "ascoltato" solo quando il fragment è attivo
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 schedaDao.getTutteSchede().collectLatest { schede ->
                     listaSchedeMutable.clear()
@@ -118,6 +133,7 @@ class AllenamentoFragment : Fragment() {
         }
     }
 
+    // Mostra un dialog per digitare il nome della scheda
     private fun mostraPopupNuovaScheda() {
         val inputNomeScheda = EditText(requireContext())
         inputNomeScheda.hint = "Es. Chest & Biceps"
@@ -137,6 +153,7 @@ class AllenamentoFragment : Fragment() {
                     )
 
                     viewLifecycleOwner.lifecycleScope.launch {
+                        // Salva la scheda nel DB
                         GestoreSchede.salvaScheda(
                             requireContext(),
                             nuovaScheda

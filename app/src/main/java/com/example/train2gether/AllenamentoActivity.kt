@@ -26,8 +26,10 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import com.google.android.material.chip.Chip
 
+// L'activity che gestisce la schermata di allenamento
 class AllenamentoActivity : AppCompatActivity() {
 
+    // Dichiarazione delle componenti della schermata
     private lateinit var txtNomeSchedaTitle: TextView
     private lateinit var txtTimer: TextView
     private lateinit var recyclerEsercizi: RecyclerView
@@ -36,9 +38,11 @@ class AllenamentoActivity : AppCompatActivity() {
     private lateinit var adapter: EsercizioAdapter
     private lateinit var allenamentoDao: AllenamentoDao
 
+    // Liste di supporto e sincronizzatori per le operazioni async sul DB
     private val listaEserciziMutable = mutableListOf<EsercizioConSerie>()
     private val serieDbMutex = Mutex()
 
+    // Variabili di stato della schermata e dell'allenamento corrente
     private var schedaId: Int? = null
     private var isModifica = false
     private var schedaAttuale: SchedaAllenamento? = null
@@ -50,31 +54,38 @@ class AllenamentoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Impostazione del colore della barra di stato
         window.statusBarColor = android.graphics.Color.parseColor("#121212")
-        supportActionBar?.hide()
+        supportActionBar?.hide() // Nascondiamo la action bar
         setContentView(R.layout.activity_allenamento)
 
+        // Collegamento delle variabili agli id del file XML
         txtNomeSchedaTitle = findViewById(R.id.txtNomeSchedaTitle)
         txtTimer = findViewById(R.id.txtTimer)
         recyclerEsercizi = findViewById(R.id.recyclerEsercizi)
         btnAggiungiEsercizio = findViewById(R.id.btnAggiungiEsercizio)
         btnSalvaOppureTermina = findViewById(R.id.btnSalvaOppureTermina)
 
+        // Inizializzazione del Dao per interagire con le tabelle del DB
         allenamentoDao = AppDatabase.getDatabase(this).allenamentoDao()
 
+        // Estrazione dei parametri passati dall'Activity precedente tramite Intent
         schedaId = intent.getIntExtra("SCHEDA_ID", -1).takeIf { it > 0 }
         isModifica = intent.getBooleanExtra("IS_MODIFICA", false)
 
+        // Configurazione del timer
         txtTimer.text = ""
         txtTimer.visibility = View.GONE
         txtTimer.setOnClickListener { fermaTimerRecupero() }
 
         recyclerEsercizi.layoutManager = LinearLayoutManager(this)
 
+        // Inizializzazione dell'adapter per gestire la lista degli esercizi e delle serie
         adapter = EsercizioAdapter(
             listaEsercizi = listaEserciziMutable,
             isModifica = isModifica,
 
+            // Callback eseguita quando si spunta una serie
             onStatoSerieCambiato = { esercizio, ordineEsercizio, serie, checked ->
                 gestisciStatoSerie(
                     esercizio = esercizio,
@@ -84,6 +95,7 @@ class AllenamentoActivity : AppCompatActivity() {
                 )
             },
 
+            // Callback per modificare il peso o le ripetizioni
             onSerieModificata = { esercizio, ordineEsercizio, serie ->
                 aggiornaSerieEseguita(
                     esercizio = esercizio,
@@ -92,10 +104,12 @@ class AllenamentoActivity : AppCompatActivity() {
                 )
             },
 
+            // Callback per avviare il timer
             onSerieSpuntata = { tempoSecondi ->
                 avviaTimerRecupero(tempoSecondi * 1000L)
             },
 
+            // Callback che traccia le modifiche in "modalità" modifica
             onDatoModificato = {
                 if (isModifica) isDataModified = true
             }
@@ -103,29 +117,35 @@ class AllenamentoActivity : AppCompatActivity() {
 
         recyclerEsercizi.adapter = adapter
 
+        // Imposta il testo del pulsante principale in base alla modalità
         btnSalvaOppureTermina.text =
             if (isModifica) "Salva Modifiche" else "Termina Allenamento"
 
+        // Disabilita temporaneamente i pulsanti finché i dati non vengono caricati
         if (!isModifica){
             btnAggiungiEsercizio.isEnabled= false
             btnSalvaOppureTermina.isEnabled = false
         }
 
+        // Carica la scheda dal DB o impostiamo il titolo se è nuova
         if (schedaId != null) {
             caricaScheda()
         } else {
             txtNomeSchedaTitle.text = "Nuova Scheda"
         }
 
+        // Button per aprire il popup di aggiunta di un esercizio
         btnAggiungiEsercizio.setOnClickListener {
             mostraPopupNuovoEsercizio()
         }
 
+        // Button di fine operazione
         btnSalvaOppureTermina.setOnClickListener {
             if (isModifica) salvaModificheScheda()
             else terminaAllenamento()
         }
 
+        // Intercettiamo il tasto indietro per gestire l'uscita
         onBackPressedDispatcher.addCallback(
             this,
             object : OnBackPressedCallback(true) {
@@ -136,6 +156,7 @@ class AllenamentoActivity : AppCompatActivity() {
         )
     }
 
+    // Funzione per caricare i dati della scheda
     private fun caricaScheda() {
         val id = schedaId ?: return
 
@@ -160,6 +181,7 @@ class AllenamentoActivity : AppCompatActivity() {
 
             txtNomeSchedaTitle.text = scheda.nomeScheda
 
+            // Se siamo in esecuzione e l'allenamento non è stato creato, esso viene inserito nel DB
             if(!isModifica && allenamentoId == null){
                 try{
                     creaAllenamentoNelDatabase(scheda)
@@ -172,10 +194,12 @@ class AllenamentoActivity : AppCompatActivity() {
                 }
             }
 
+            // Popoliamo la lista degli esercizi e aggiorniamo l'adapter
             listaEserciziMutable.clear()
             listaEserciziMutable.addAll(scheda.listaEsercizi)
             adapter.notifyDataSetChanged()
 
+            // Riabilita i pulsanti una volta completato il caricamento
             if(!isModifica){
                 btnAggiungiEsercizio.isEnabled=true
                 btnSalvaOppureTermina.isEnabled=true
@@ -183,6 +207,7 @@ class AllenamentoActivity : AppCompatActivity() {
         }
     }
 
+    // Inserisce una nuova riga di allenamento in corso nel DB
     private suspend fun creaAllenamentoNelDatabase(scheda: SchedaAllenamento) {
         tempoInizioMillis = System.currentTimeMillis()
 
@@ -200,6 +225,7 @@ class AllenamentoActivity : AppCompatActivity() {
         allenamentoId = nuovoId.toInt()
     }
 
+    // Gestisce in modo thread-safe il salvataggio/rimozione di una singola serie quando viene spuntata la checkbox
     private fun gestisciStatoSerie(
         esercizio: EsercizioConSerie,
         ordineEsercizio: Int,
@@ -278,6 +304,7 @@ class AllenamentoActivity : AppCompatActivity() {
         }
     }
 
+    // Aggiorna i dati di una serie già registrata nel DB
     private fun aggiornaSerieEseguita(
         esercizio: EsercizioConSerie,
         ordineEsercizio: Int,
@@ -318,6 +345,7 @@ class AllenamentoActivity : AppCompatActivity() {
         }
     }
 
+    // Finalizza l'allenamento calcolandone la durata e salvandolo nel DB
     private fun terminaAllenamento() {
         val id = allenamentoId
 
@@ -363,6 +391,7 @@ class AllenamentoActivity : AppCompatActivity() {
         }
     }
 
+    // Salva le modifiche apportate alla scheda
     private fun salvaModificheScheda() {
         val schedaDaSalvare = SchedaAllenamento(
             id = schedaId,
@@ -388,6 +417,7 @@ class AllenamentoActivity : AppCompatActivity() {
         }
     }
 
+    // Gestisce l'uscita a seconda della modalità
     private fun gestisciUscita() {
         if (isModifica) {
             gestisciUscitaModificaScheda()
@@ -396,6 +426,7 @@ class AllenamentoActivity : AppCompatActivity() {
         }
     }
 
+    // Mostra un dialog se l'utente tenta di uscire senza salvare
     private fun gestisciUscitaModificaScheda() {
         if (!isDataModified) {
             finish()
@@ -416,6 +447,7 @@ class AllenamentoActivity : AppCompatActivity() {
             .show()
     }
 
+    // Mostra un dialog se l'utente abbandona l'allenamento in corso
     private fun gestisciAbbandonoAllenamento() {
         AlertDialog.Builder(this)
             .setTitle("Abbandona allenamento?")
@@ -427,6 +459,7 @@ class AllenamentoActivity : AppCompatActivity() {
             .show()
     }
 
+    // Elimina dal DB l'allenamento corrente in caso di abbandono
     private fun eliminaAllenamentoInCorso() {
         val id = allenamentoId
 
@@ -489,6 +522,7 @@ class AllenamentoActivity : AppCompatActivity() {
         }.start()
     }
 
+    // Ferma manualente il timer
     private fun fermaTimerRecupero() {
         countDownTimer?.cancel()
         countDownTimer = null
@@ -502,6 +536,7 @@ class AllenamentoActivity : AppCompatActivity() {
         }, 1000)
     }
 
+    // Mostra un popup per scegliere un esercizio dal DB e aggiungerlo alla scheda
     private fun mostraPopupNuovoEsercizio() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_selezione_esercizio, null)
         val searchView = dialogView.findViewById<SearchView>(R.id.searchEsercizio)

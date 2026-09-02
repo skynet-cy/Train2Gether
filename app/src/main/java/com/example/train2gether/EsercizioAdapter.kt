@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
+// Adapter principale per la RecyclerView degli esercizi presenti nella scheda
 class EsercizioAdapter(
     private val listaEsercizi: MutableList<EsercizioConSerie>,
     private val isModifica: Boolean,
@@ -23,6 +24,7 @@ class EsercizioAdapter(
     private val onDatoModificato: () -> Unit
 ) : RecyclerView.Adapter<EsercizioAdapter.EsercizioViewHolder>() {
 
+    // ViewHolder che mantiene i riferimenti agli elementi grafici del singolo esercizio
     class EsercizioViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val txtNomeEsercizio: TextView = view.findViewById(R.id.txtNomeEsercizio)
         val txtTimerEsercizio: TextView = view.findViewById(R.id.txtTimerEsercizio)
@@ -32,6 +34,7 @@ class EsercizioAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EsercizioViewHolder {
+        // Gonfia il layout del file XML
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_esercizio, parent, false)
         return EsercizioViewHolder(view)
@@ -41,8 +44,10 @@ class EsercizioAdapter(
         val esercizio = listaEsercizi[position]
         holder.txtNomeEsercizio.text = esercizio.nomeEsercizio
 
+        // Imposta e formatta il testo del timer del singolo esercizio
         aggiornaTestoTimer(holder.txtTimerEsercizio, esercizio.tempoRecuperoSecondi)
 
+        // Al click sul timer, apre il popup di modifica
         holder.txtTimerEsercizio.setOnClickListener {
             mostraPickerPersonalizzato(holder.itemView.context, esercizio) { nuoviSecondi ->
                 esercizio.tempoRecuperoSecondi = nuoviSecondi
@@ -51,6 +56,7 @@ class EsercizioAdapter(
             }
         }
 
+        // Configura la RecyclerView interna per gestire le singole serie
         holder.recyclerSerie.layoutManager = LinearLayoutManager(holder.itemView.context)
 
         lateinit var serieAdapter: SerieAdapter
@@ -61,6 +67,7 @@ class EsercizioAdapter(
 
             isModifica = isModifica,
 
+            // Callback esegui quando si spunta una serie
             onStatoSerieCambiato = {
                     serie,
                     checked ->
@@ -72,7 +79,7 @@ class EsercizioAdapter(
                     ordineEsercizio !=
                     RecyclerView.NO_POSITION
                 ) {
-
+                    // Notifica all'activity il cambio di stato della serie
                     onStatoSerieCambiato(
                         esercizio,
                         ordineEsercizio,
@@ -80,6 +87,7 @@ class EsercizioAdapter(
                         checked
                     )
 
+                    // Se la serie è stata completata fa partire il timer di recupero
                     if (
                         checked &&
                         !isModifica
@@ -93,6 +101,7 @@ class EsercizioAdapter(
                 }
             },
 
+            // Callback per aggiornare i kg o le ripetizioni di una serie
             onSerieModificata = { serie ->
 
                 val ordineEsercizio =
@@ -111,6 +120,7 @@ class EsercizioAdapter(
                 }
             },
 
+            // Callback per eliminare una singola serie
             onEliminaSerie = { index ->
 
                 if (
@@ -134,6 +144,7 @@ class EsercizioAdapter(
 
         holder.recyclerSerie.adapter = serieAdapter
 
+        // Bottone per aggiungere una nuova serie
         holder.btnAggiungiSerie.setOnClickListener {
             val nuovoSet = esercizio.listaSerie.size + 1
             esercizio.listaSerie.add(SerieEsercizio(nuovoSet, 0.0, 0))
@@ -141,6 +152,7 @@ class EsercizioAdapter(
             onDatoModificato()
         }
 
+        // Mostra il pulsante per eliminare l'esercizio in base alla modalità
         if (isModifica) {
             holder.btnEliminaEsercizio.visibility = View.VISIBLE
 
@@ -162,12 +174,14 @@ class EsercizioAdapter(
 
     override fun getItemCount(): Int = listaEsercizi.size
 
+    // Converte i secondi totali nel formato "mm:ss"
     private fun aggiornaTestoTimer(textView: TextView, secondiTotali: Long) {
         val minuti = secondiTotali / 60
         val secondi = secondiTotali % 60
         textView.text = String.format("⏱️ %02d:%02d", minuti, secondi)
     }
 
+    // Costruisce e mostra un selettore numerico per minuti e secondi di recupero
     private fun mostraPickerPersonalizzato(
         context: Context,
         esercizio: EsercizioConSerie,
