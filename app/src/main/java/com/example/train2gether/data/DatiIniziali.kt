@@ -1,5 +1,5 @@
 package com.example.train2gether.data
-
+//lista contenente gli esercizi predefiniti inseriti alla creazione del database.
 object DatiIniziali {
 
     val esercizi = listOf(

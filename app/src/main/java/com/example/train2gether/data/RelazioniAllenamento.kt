@@ -46,7 +46,7 @@ data class AllenamentoCompleto(
     }
 
 
-    //Raggruppa le serie per occorrenza dell'esercizio.
+    //Raggruppa le serie in base all'ordine dell'esercizio nell'allenamento.
     fun seriePerEsercizio(): Map<Int, List<SerieEseguita>> {
         return serieOrdinate().groupBy {
             it.ordineEsercizio
