@@ -49,6 +49,9 @@ dependencies {
     implementation("androidx.room:room-ktx:2.8.4")
     ksp("androidx.room:room-compiler:2.8.4")
 
+    implementation("net.zetetic:sqlcipher-android:4.19.0@aar")
+    implementation("androidx.sqlite:sqlite:2.7.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
